@@ -101,7 +101,7 @@ public:
 		cursor_ = data_.data();
 
 		try {
-			parse();
+			parse_valid_semver();
 			good_ = true;
 		} catch (parse_error &) {
 			// left blank
@@ -138,16 +138,22 @@ private:
 		return std::string_view{start, static_cast<std::string_view::size_type>(end - start)};
 	}
 
-	void parse()
+	void parse_valid_semver()
 	{
 		parse_version_core();
-		if (is_plus(cursor_)) {
-			advance(1);
-			parse_build();
-		}
 		if (is_dash(cursor_)) {
 			advance(1);
 			parse_pre_release();
+			if (is_plus(cursor_)) {
+				advance(1);
+				parse_build();
+			}
+			return;
+		}
+		if (is_plus(cursor_)) {
+			advance(1);
+			parse_build();
+			return;
 		}
 	}
 
@@ -342,6 +348,9 @@ private:
 
 	bool is_alphanumeric_identifier(const char_type * p) const noexcept
 	{
+		// TODO: this is wrong, it's: non-digit | non-dit id-characters | id-characters non-digit | id-chars non-digit id-chars
+		//   note the id-charS, plural, not singular
+		// CONSIDER: move to a tokinzer / scanner instead of this character based parser
 		return is_non_digit(p)
 			|| (is_identifier_character(p) && peek([this](const char_type * p) { return is_non_digit(p); }));
 	}
