@@ -34,6 +34,8 @@ target_include_directories(${PROJECT_NAME}
 	)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
+
+enable_testing()
 add_executable(testrunner)
 target_sources(testrunner
 	PRIVATE
@@ -53,5 +55,7 @@ target_link_libraries(testrunner
 		gmock_main
 		${PROJECT_NAME}
 	)
-add_test(unittests testrunner)
+add_test(unittest testrunner)
+#include(GoogleTest)
+#gtest_discover_tests(testrunner)
 
