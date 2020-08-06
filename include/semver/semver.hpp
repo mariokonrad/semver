@@ -7,84 +7,10 @@
 #include <stdexcept>
 #include <cassert>
 
-
 namespace semver {
 inline namespace v1 {
 
-// BNF from semver.org
-//
-// <valid semver> ::= <version core>
-//                  | <version core> "-" <pre-release>
-//                  | <version core> "+" <build>
-//                  | <version core> "-" <pre-release> "+" <build>
-//
-// <version core> ::= <major> "." <minor> "." <patch>
-//
-// <major> ::= <numeric identifier>
-//
-// <minor> ::= <numeric identifier>
-//
-// <patch> ::= <numeric identifier>
-//
-// <pre-release> ::= <dot-separated pre-release identifiers>
-//
-// <dot-separated pre-release identifiers> ::= <pre-release identifier>
-//                                           | <pre-release identifier> "." <dot-separated pre-release identifiers>
-//
-// <build> ::= <dot-separated build identifiers>
-//
-// <dot-separated build identifiers> ::= <build identifier>
-//                                     | <build identifier> "." <dot-separated build identifiers>
-//
-// <pre-release identifier> ::= <alphanumeric identifier>
-//                            | <numeric identifier>
-//
-// <build identifier> ::= <alphanumeric identifier>
-//                      | <digits>
-//
-// <alphanumeric identifier> ::= <non-digit>
-//                             | <non-digit> <identifier characters>
-//                             | <identifier characters> <non-digit>
-//                             | <identifier characters> <non-digit> <identifier characters>
-//
-// <numeric identifier> ::= "0"
-//                        | <positive digit>
-//                        | <positive digit> <digits>
-//
-// <identifier characters> ::= <identifier character>
-//                           | <identifier character> <identifier characters>
-//
-// <identifier character> ::= <digit>
-//                          | <non-digit>
-//
-// <non-digit> ::= <letter>
-//               | "-"
-//
-// <digits> ::= <digit>
-//            | <digit> <digits>
-//
-// <digit> ::= "0"
-//           | <positive digit>
-//
-// <positive digit> ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-//
-// <letter> ::= "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
-//            | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T"
-//            | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" | "b" | "c" | "d"
-//            | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n"
-//            | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
-//            | "y" | "z"
-//
-//
-//
-// suggested regex: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
-//
-// groups:
-// 1: major
-// 2: minor
-// 3: patch
-// 4: prerelease
-// 5: build
+// Implementation of semver 2.0.0
 //
 class semver
 {
@@ -112,7 +38,7 @@ public:
 
 		try {
 			parse_valid_semver();
-			good_ = true;
+			good_ = cursor_ == last_;
 		} catch (parse_error &) {
 			// left blank
 		}
@@ -169,8 +95,7 @@ private:
 
 	void advance(int n) noexcept
 	{
-		if (cursor_ < last_)
-			cursor_ += std::min(n, static_cast<int>(last_ - cursor_));
+		cursor_ += std::min(n, static_cast<int>(last_ - cursor_));
 	}
 
 	void parse_version_core()
@@ -228,94 +153,28 @@ private:
 
 	void parse_dot_separated_build_identifier()
 	{
-		parse_build_identifier();
+		parse_identifier();
 		while (is_dot(cursor_)) {
 			parse_dot();
-			parse_build_identifier();
+			parse_identifier();
 		}
-	}
-
-	void parse_build_identifier()
-	{
-		if (is_alphanumeric_identifier(cursor_)) {
-			parse_alphanumeric_identifier();
-			return;
-		}
-		if (is_digit(cursor_)) {
-			parse_digits();
-			return;
-		}
-		throw parse_error{"build_identifier"};
 	}
 
 	void parse_dot_separated_prerelease_identifier()
 	{
-		parse_prerelease_identifier();
+		parse_identifier();
 		while (is_dot(cursor_)) {
 			parse_dot();
-			parse_prerelease_identifier();
+			parse_identifier();
 		}
 	}
 
-	void parse_prerelease_identifier()
+	void parse_identifier()
 	{
-		if (is_alphanumeric_identifier(cursor_)) {
-			parse_alphanumeric_identifier();
-			return;
-		}
-		if (is_numeric_identifier(cursor_)) {
-			parse_numeric_identifier();
-			return;
-		}
-		throw parse_error{"prerelease_identifier"};
-	}
-
-	void parse_alphanumeric_identifier()
-	{
-		if (is_non_digit(cursor_)) {
-			parse_non_digit();
-			if (is_identifier_character(cursor_))
-				parse_identifier_characters();
-			return;
-		}
-		if (is_identifier_character(cursor_)) {
-			parse_identifier_characters();
-			parse_non_digit();
-			if (is_identifier_character(cursor_))
-				parse_identifier_characters();
-			return;
-		}
-		throw parse_error{"alphanumeric_identifier"};
-	}
-
-	void parse_identifier_characters()
-	{
-		if (!is_identifier_character(cursor_))
-			throw parse_error{"identifier_characters"};
-		while (is_identifier_character(cursor_))
+		if (!(is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_)))
+			throw parse_error{"identifier"};
+		while (is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))
 			advance(1);
-	}
-
-	void parse_identifier_character()
-	{
-		if (is_digit(cursor_)) {
-			advance(1);
-			return;
-		}
-		if (is_non_digit(cursor_)) {
-			advance(1);
-			return;
-		}
-		throw parse_error{"identifier_character"};
-	}
-
-	void parse_non_digit()
-	{
-		if (is_non_digit(cursor_)) {
-			advance(1);
-			return;
-		}
-		throw parse_error{"non_digit"};
 	}
 
 	void parse_numeric_identifier()
@@ -348,39 +207,6 @@ private:
 			throw parse_error{"digits"};
 		while (is_digit(cursor_))
 			advance(1);
-	}
-
-	// TODO: peek tokens not characters
-	template <class F>
-	bool peek(F f, int n = 1) const noexcept
-	{
-		return f(cursor_ + n);
-	}
-
-	// TODO: should be tokens, based on low level primitives
-
-	bool is_alphanumeric_identifier(const char_type * p) const noexcept
-	{
-		// TODO: this is wrong, it's: non-digit | non-dit id-characters | id-characters non-digit | id-chars non-digit id-chars
-		//   note the id-charS, plural, not singular
-		// CONSIDER: move to a tokinzer / scanner instead of this character based parser
-		return is_non_digit(p)
-			|| (is_identifier_character(p) && peek([this](const char_type * p) { return is_non_digit(p); }));
-	}
-
-	bool is_numeric_identifier(const char_type * p) const noexcept
-	{
-		return is_zero(p) || is_positive_digit(p);
-	}
-
-	bool is_identifier_character(const char_type * p) const noexcept
-	{
-		return is_digit(p) || is_non_digit(p);
-	}
-
-	bool is_non_digit(const char_type * p) const noexcept
-	{
-		return is_letter(p) || is_dash(p);
 	}
 
 	// low level primitives, must check for eof

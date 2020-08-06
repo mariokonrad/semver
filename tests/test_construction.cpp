@@ -344,5 +344,40 @@ TEST_F(test_construction, example_from_semver_org_13)
 	EXPECT_SV_EQ("x-y-z.-", v.prerelease());
 	EXPECT_SV_EQ("", v.build());
 }
+
+TEST_F(test_construction, failing_multiple_pluses)
+{
+	const auto v = semver("1.0.0+alpha+beta");
+
+	EXPECT_FALSE(v.ok());
+}
+
+TEST_F(test_construction, failing_consecutive_multiple_pluses)
+{
+	const auto v = semver("1.0.0++beta");
+
+	EXPECT_FALSE(v.ok());
+}
+
+TEST_F(test_construction, failing_empty_build)
+{
+	const auto v = semver("1.0.0+");
+
+	EXPECT_FALSE(v.ok());
+}
+
+TEST_F(test_construction, failing_empty_prerelease)
+{
+	const auto v = semver("1.0.0-");
+
+	EXPECT_FALSE(v.ok());
+}
+
+TEST_F(test_construction, failing_empty_prerelease_empty_build)
+{
+	const auto v = semver("1.0.0-+");
+
+	EXPECT_FALSE(v.ok());
+}
 }
 
