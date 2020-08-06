@@ -296,22 +296,19 @@ inline bool operator<(const semver &, const semver &) noexcept
 	return false;
 }
 
-inline bool operator<=(const semver &, const semver &) noexcept
+inline bool operator<=(const semver & v1, const semver & v2) noexcept
 {
-	// TODO: implementation
-	return false;
+	return (v1 == v2) || (v1 < v2);
 }
 
-inline bool operator>(const semver &, const semver &) noexcept
+inline bool operator>(const semver & v1, const semver & v2) noexcept
 {
-	// TODO: implementation
-	return false;
+	return !(v1 <= v2);
 }
 
-inline bool operator>=(const semver &, const semver &) noexcept
+inline bool operator>=(const semver & v1, const semver & v2) noexcept
 {
-	// TODO: implementation
-	return false;
+	return !(v1 < v2);
 }
 
 inline int compare(const semver & v1, const semver & v2) noexcept
