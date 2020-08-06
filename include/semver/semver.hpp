@@ -294,6 +294,8 @@ inline bool operator!=(const semver & v1, const semver & v2) noexcept
 
 inline bool operator<(const semver & v1, const semver & v2) noexcept
 {
+	// major, minor and patch are first priority to compare in descending order. if one
+	// of them is different, it is already decided.
 	if (v1.major() < v2.major())
 		return true;
 	if (v1.minor() < v2.minor())
@@ -311,13 +313,13 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	const auto p1 = v1.prerelease();
 	const auto p2 = v2.prerelease();
 
+	// if one has a prerelease the other not, the one with is smaller
 	if (!p1.empty() && p2.empty())
 		return true;
 	if (p1.empty() && !p2.empty())
 		return false;
 
-	// TODO: implementation: split prereleases with delimiter dot, compare them individually
-	//
+	// compare fields of prerelease individually, separated by '.'
 	// rules from semver.org, literally or shortened:
 	//
 	//   - pure numerically are compared numerically
@@ -326,8 +328,59 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	//   - larger set of fields has a higher precedence than the smaller set, if all of
 	//     preceeding identifiers are equal, example:
 	//     1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
+	//
+	std::string_view::size_type c1 = 0u;
+	std::string_view::size_type c2 = 0u;
+	for (;;) {
 
-	return false;
+		const auto c1e = p1.find('.', c1);
+		const auto c2e = p2.find('.', c2);
+
+		// numerical vs alphanumerical fields? alphanumerical alwasys wins
+		const bool c1numeric = p1.substr(c1, c1e).find_first_not_of(std::string_view("0123456789")) == std::string_view::npos;
+		const bool c2numeric = p2.substr(c2, c2e).find_first_not_of(std::string_view("0123456789")) == std::string_view::npos;
+		if (c1numeric && !c2numeric)
+			return true;
+		if (!c1numeric && c2numeric)
+			return false;
+
+		if (c1numeric && c2numeric) {
+			// pure numerical comparison
+
+			unsigned long long p1n = 0u;
+			unsigned long long p2n = 0u;
+
+			// we ignore the return value because it was already tested to be numerical only
+			std::from_chars(p1.data() + c1, p1.data() + std::min(c1e, p1.size()), p1n);
+			std::from_chars(p2.data() + c2, p2.data() + std::min(c2e, p2.size()), p2n);
+
+			if (p1n < p2n)
+				return true;
+			if (p1n > p2n)
+				return false;
+		} else {
+			// alphanumerical comparison
+
+			const auto rc = p1.compare(c1, c1e - c1, p2, c2, c2e - c2);
+			if (rc < 0)
+				return true;
+			if (rc > 0)
+				return false;
+		}
+
+		// compare number of fields, unil now all fields were the same, the one with
+		// more fields is the higher version
+		if ((c1e != std::string_view::npos) && (c2e == std::string_view::npos))
+			return false; // p1 has more fields
+		if ((c1e == std::string_view::npos) && (c2e != std::string_view::npos))
+			return true; // p2 has more fields
+		if ((c1e == std::string_view::npos) && (c2e == std::string_view::npos))
+			return false; // both exhausted
+
+		// all were the same until now, on to the next field
+		c1 = c1e + 1u;
+		c2 = c2e + 1u;
+	}
 }
 
 inline bool operator<=(const semver & v1, const semver & v2) noexcept

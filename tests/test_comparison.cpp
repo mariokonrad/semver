@@ -47,6 +47,20 @@ TEST_F(test_comparison, example_from_semver_org_3)
 	EXPECT_TRUE(v7 < v8);
 }
 
+TEST_F(test_comparison, numerical_prerelease)
+{
+	auto v1 = semver("1.0.0-5");
+	auto v2 = semver("1.0.0-5.1");
+	auto v3 = semver("1.0.0-123");
+	auto v4 = semver("1.0.0-124");
+	auto v5 = semver("1.0.0-124.1");
+
+	EXPECT_TRUE(v1 < v2);
+	EXPECT_TRUE(v2 < v3);
+	EXPECT_TRUE(v3 < v4);
+	EXPECT_TRUE(v4 < v5);
+}
+
 TEST_F(test_comparison, not_less)
 {
 	EXPECT_FALSE(semver("1.0.0") < semver("1.0.0"));
