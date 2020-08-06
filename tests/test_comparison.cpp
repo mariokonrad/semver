@@ -47,6 +47,19 @@ TEST_F(test_comparison, example_from_semver_org_3)
 	EXPECT_TRUE(v7 < v8);
 }
 
+TEST_F(test_comparison, not_less)
+{
+	EXPECT_FALSE(semver("1.0.0") < semver("1.0.0"));
+	EXPECT_FALSE(semver("1.2.0") < semver("1.2.0"));
+	EXPECT_FALSE(semver("1.2.3") < semver("1.2.3"));
+
+	EXPECT_FALSE(semver("2.0.0") < semver("1.0.0"));
+	EXPECT_FALSE(semver("1.2.0") < semver("1.1.0"));
+	EXPECT_FALSE(semver("1.2.3") < semver("1.2.2"));
+
+	EXPECT_FALSE(semver("1.2.3-alpha") < semver("1.2.3-alpha"));
+}
+
 TEST_F(test_comparison, equality_1)
 {
 	const auto v1 = semver("1.2.3");

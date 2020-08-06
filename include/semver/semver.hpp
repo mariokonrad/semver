@@ -308,7 +308,25 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	if (v1.patch() > v2.patch())
 		return false;
 
-	// TODO: implementation
+	const auto p1 = v1.prerelease();
+	const auto p2 = v2.prerelease();
+
+	if (!p1.empty() && p2.empty())
+		return true;
+	if (p1.empty() && !p2.empty())
+		return false;
+
+	// TODO: implementation: split prereleases with delimiter dot, compare them individually
+	//
+	// rules from semver.org, literally or shortened:
+	//
+	//   - pure numerically are compared numerically
+	//   - alphanumeric are compared lexically
+	//   - pure numerically has always lower precedence than alphanumerically
+	//   - larger set of fields has a higher precedence than the smaller set, if all of
+	//     preceeding identifiers are equal, example:
+	//     1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
+
 	return false;
 }
 
