@@ -41,6 +41,7 @@ target_sources(testrunner
 	PRIVATE
 		tests/test_construction.cpp
 		tests/test_comparison.cpp
+		tests/test_string.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE

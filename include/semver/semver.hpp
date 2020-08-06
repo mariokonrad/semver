@@ -53,6 +53,25 @@ public:
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
 
+	std::string str() const
+	{
+		auto s = std::to_string(major()) + '.' + std::to_string(minor()) + '.' + std::to_string(patch());
+		const auto pr = prerelease();
+		const auto b = build();
+		if (!pr.empty() || !b.empty()) {
+			s.reserve(s.size() + pr.size() + (!!pr.size()) + b.size() + (!!b.size()));
+			if (!pr.empty()) {
+				s += '-';
+				s.append(pr.data(), pr.size());
+			}
+			if (!b.empty()) {
+				s += '+';
+				s.append(b.data(), b.size());
+			}
+		}
+		return s;
+	}
+
 private:
 	struct parse_error : std::runtime_error { using runtime_error::runtime_error; };
 
@@ -251,28 +270,24 @@ private:
 	}
 };
 
-inline int compare(const semver &, const semver &) noexcept
+inline std::string to_string(const semver & v)
 {
-	// TODO: implementation
-	return 0;
+	return v.str();
 }
 
-inline std::string to_string(const semver &)
+inline bool operator==(const semver & v1, const semver & v2) noexcept
 {
-	// TODO: implementation
-	return {};
+	return true
+		&& (v1.major() == v2.major())
+		&& (v1.minor() == v2.minor())
+		&& (v1.patch() == v2.patch())
+		&& (v1.prerelease() == v2.prerelease())
+		;
 }
 
-inline bool operator==(const semver &, const semver &) noexcept
+inline bool operator!=(const semver & v1, const semver & v2) noexcept
 {
-	// TODO: implementation
-	return false;
-}
-
-inline bool operator!=(const semver &, const semver &) noexcept
-{
-	// TODO: implementation
-	return false;
+	return !(v1 == v2);
 }
 
 inline bool operator<(const semver &, const semver &) noexcept
@@ -297,6 +312,11 @@ inline bool operator>=(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
+}
+
+inline int compare(const semver & v1, const semver & v2) noexcept
+{
+	return (v1 == v2) ? 0 : (v1 < v2) ? -1 : +1;
 }
 }
 }
