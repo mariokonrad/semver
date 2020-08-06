@@ -76,6 +76,16 @@ inline namespace v1 {
 //            | "y" | "z"
 //
 //
+//
+// suggested regex: ^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+//
+// groups:
+// 1: major
+// 2: minor
+// 3: patch
+// 4: prerelease
+// 5: build
+//
 class semver
 {
 private:
@@ -228,7 +238,7 @@ private:
 	void parse_build_identifier()
 	{
 		if (is_alphanumeric_identifier(cursor_)) {
-			parse_alphanumeric_identiifer();
+			parse_alphanumeric_identifier();
 			return;
 		}
 		if (is_digit(cursor_)) {
@@ -250,7 +260,7 @@ private:
 	void parse_prerelease_identifier()
 	{
 		if (is_alphanumeric_identifier(cursor_)) {
-			parse_alphanumeric_identiifer();
+			parse_alphanumeric_identifier();
 			return;
 		}
 		if (is_numeric_identifier(cursor_)) {
@@ -260,7 +270,7 @@ private:
 		throw parse_error{"prerelease_identifier"};
 	}
 
-	void parse_alphanumeric_identiifer()
+	void parse_alphanumeric_identifier()
 	{
 		if (is_non_digit(cursor_)) {
 			parse_non_digit();
@@ -340,11 +350,14 @@ private:
 			advance(1);
 	}
 
+	// TODO: peek tokens not characters
 	template <class F>
 	bool peek(F f, int n = 1) const noexcept
 	{
 		return f(cursor_ + n);
 	}
+
+	// TODO: should be tokens, based on low level primitives
 
 	bool is_alphanumeric_identifier(const char_type * p) const noexcept
 	{
