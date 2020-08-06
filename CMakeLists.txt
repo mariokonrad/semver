@@ -40,6 +40,7 @@ add_executable(testrunner)
 target_sources(testrunner
 	PRIVATE
 		tests/test_construction.cpp
+		tests/test_comparison.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE

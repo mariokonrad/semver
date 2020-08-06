@@ -2,6 +2,7 @@
 #define SEMVER_HPP
 
 #include <algorithm>
+#include <charconv>
 #include <string>
 #include <string_view>
 #include <stdexcept>
@@ -32,7 +33,6 @@ public:
 		: data_(s)
 	{
 		assert(!data_.empty());
-		first_ = data_.data();
 		last_ = data_.data() + data_.size();
 		cursor_ = data_.data();
 
@@ -44,11 +44,11 @@ public:
 		}
 	}
 
-	std::string_view major() const noexcept { return major_; }
-	std::string_view minor() const noexcept { return minor_; }
-	std::string_view patch() const noexcept { return patch_; }
-	std::string_view build() const noexcept { return build_; }
-	std::string_view prerelease() const noexcept { return prerelease_; }
+	unsigned long major() const noexcept { return major_; }
+	unsigned long minor() const noexcept { return minor_; }
+	unsigned long patch() const noexcept { return patch_; }
+	const std::string_view build() const noexcept { return build_; }
+	const std::string_view prerelease() const noexcept { return prerelease_; }
 
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
@@ -57,15 +57,14 @@ private:
 	struct parse_error : std::runtime_error { using runtime_error::runtime_error; };
 
 	std::string data_;
-	const char_type * first_ = {};
 	const char_type * last_ = {};
 	const char_type * start_ = {};
 	const char_type * cursor_ = {};
 	bool good_ = false;
 
-	std::string_view major_ = {};
-	std::string_view minor_ = {};
-	std::string_view patch_ = {};
+	unsigned long major_ = {};
+	unsigned long minor_ = {};
+	unsigned long patch_ = {};
 	std::string_view prerelease_ = {};
 	std::string_view build_ = {};
 
@@ -111,21 +110,21 @@ private:
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
-		major_ = token(start_, cursor_);
+		std::from_chars(start_, cursor_, major_);
 	}
 
 	void parse_minor()
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
-		minor_ = token(start_, cursor_);
+		std::from_chars(start_, cursor_, minor_);
 	}
 
 	void parse_patch()
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
-		patch_ = token(start_, cursor_);
+		std::from_chars(start_, cursor_, patch_);
 	}
 
 	void parse_dot()
@@ -252,6 +251,53 @@ private:
 	}
 };
 
+int compare(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return 0;
+}
+
+std::string to_string(const semver &)
+{
+	// TODO: implementation
+	return {};
+}
+
+bool operator==(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
+
+bool operator!=(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
+
+bool operator<(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
+
+bool operator<=(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
+
+bool operator>(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
+
+bool operator>=(const semver &, const semver &) noexcept
+{
+	// TODO: implementation
+	return false;
+}
 }
 }
 
