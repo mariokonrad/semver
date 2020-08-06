@@ -17,6 +17,18 @@ TEST_F(test_comparison, example_from_semver_org_1)
 	EXPECT_TRUE(v1 < v2);
 	EXPECT_TRUE(v2 < v3);
 	EXPECT_TRUE(v3 < v4);
+
+	EXPECT_FALSE(v1 > v2);
+	EXPECT_FALSE(v2 > v3);
+	EXPECT_FALSE(v3 > v4);
+
+	EXPECT_FALSE(v1 == v2);
+	EXPECT_FALSE(v2 == v3);
+	EXPECT_FALSE(v3 == v4);
+
+	EXPECT_TRUE(v1 != v2);
+	EXPECT_TRUE(v2 != v3);
+	EXPECT_TRUE(v3 != v4);
 }
 
 TEST_F(test_comparison, example_from_semver_org_2)
@@ -25,6 +37,9 @@ TEST_F(test_comparison, example_from_semver_org_2)
 	const auto v2 = semver("1.0.0");
 
 	EXPECT_TRUE(v1 < v2);
+	EXPECT_FALSE(v1 > v2);
+	EXPECT_FALSE(v1 == v2);
+	EXPECT_TRUE(v1 != v2);
 }
 
 TEST_F(test_comparison, example_from_semver_org_3)
@@ -45,6 +60,30 @@ TEST_F(test_comparison, example_from_semver_org_3)
 	EXPECT_TRUE(v5 < v6);
 	EXPECT_TRUE(v6 < v7);
 	EXPECT_TRUE(v7 < v8);
+
+	EXPECT_FALSE(v1 > v2);
+	EXPECT_FALSE(v2 > v3);
+	EXPECT_FALSE(v3 > v4);
+	EXPECT_FALSE(v4 > v5);
+	EXPECT_FALSE(v5 > v6);
+	EXPECT_FALSE(v6 > v7);
+	EXPECT_FALSE(v7 > v8);
+
+	EXPECT_FALSE(v1 == v2);
+	EXPECT_FALSE(v2 == v3);
+	EXPECT_FALSE(v3 == v4);
+	EXPECT_FALSE(v4 == v5);
+	EXPECT_FALSE(v5 == v6);
+	EXPECT_FALSE(v6 == v7);
+	EXPECT_FALSE(v7 == v8);
+
+	EXPECT_TRUE(v1 != v2);
+	EXPECT_TRUE(v2 != v3);
+	EXPECT_TRUE(v3 != v4);
+	EXPECT_TRUE(v4 != v5);
+	EXPECT_TRUE(v5 != v6);
+	EXPECT_TRUE(v6 != v7);
+	EXPECT_TRUE(v7 != v8);
 }
 
 TEST_F(test_comparison, numerical_prerelease)
@@ -59,6 +98,21 @@ TEST_F(test_comparison, numerical_prerelease)
 	EXPECT_TRUE(v2 < v3);
 	EXPECT_TRUE(v3 < v4);
 	EXPECT_TRUE(v4 < v5);
+
+	EXPECT_FALSE(v1 > v2);
+	EXPECT_FALSE(v2 > v3);
+	EXPECT_FALSE(v3 > v4);
+	EXPECT_FALSE(v4 > v5);
+
+	EXPECT_FALSE(v1 == v2);
+	EXPECT_FALSE(v2 == v3);
+	EXPECT_FALSE(v3 == v4);
+	EXPECT_FALSE(v4 == v5);
+
+	EXPECT_TRUE(v1 != v2);
+	EXPECT_TRUE(v2 != v3);
+	EXPECT_TRUE(v3 != v4);
+	EXPECT_TRUE(v4 != v5);
 }
 
 TEST_F(test_comparison, not_less)
