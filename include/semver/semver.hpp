@@ -251,49 +251,49 @@ private:
 	}
 };
 
-int compare(const semver &, const semver &) noexcept
+inline int compare(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return 0;
 }
 
-std::string to_string(const semver &)
+inline std::string to_string(const semver &)
 {
 	// TODO: implementation
 	return {};
 }
 
-bool operator==(const semver &, const semver &) noexcept
+inline bool operator==(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
 }
 
-bool operator!=(const semver &, const semver &) noexcept
+inline bool operator!=(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
 }
 
-bool operator<(const semver &, const semver &) noexcept
+inline bool operator<(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
 }
 
-bool operator<=(const semver &, const semver &) noexcept
+inline bool operator<=(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
 }
 
-bool operator>(const semver &, const semver &) noexcept
+inline bool operator>(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
 }
 
-bool operator>=(const semver &, const semver &) noexcept
+inline bool operator>=(const semver &, const semver &) noexcept
 {
 	// TODO: implementation
 	return false;
