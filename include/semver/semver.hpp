@@ -133,7 +133,7 @@ private:
 			advance(1);
 			return;
 		}
-		throw parse_error{"parse_dot"};
+		throw parse_error{"dot"};
 	}
 
 	void parse_build()

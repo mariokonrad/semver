@@ -46,5 +46,59 @@ TEST_F(test_comparison, example_from_semver_org_3)
 	EXPECT_TRUE(v6 < v7);
 	EXPECT_TRUE(v7 < v8);
 }
+
+TEST_F(test_comparison, equality_1)
+{
+	const auto v1 = semver("1.2.3");
+	const auto v2 = semver("1.2.3");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
+
+TEST_F(test_comparison, equality_2)
+{
+	const auto v1 = semver("1.2.3-alpha");
+	const auto v2 = semver("1.2.3-alpha");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
+
+TEST_F(test_comparison, equality_3)
+{
+	const auto v1 = semver("1.2.3+buildid-123");
+	const auto v2 = semver("1.2.3+buildid-123");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
+
+TEST_F(test_comparison, equality_4)
+{
+	const auto v1 = semver("1.2.3+buildid-123");
+	const auto v2 = semver("1.2.3+buildid-456");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
+
+TEST_F(test_comparison, equality_5)
+{
+	const auto v1 = semver("1.2.3+buildid-123");
+	const auto v2 = semver("1.2.3");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
+
+TEST_F(test_comparison, equality_6)
+{
+	const auto v1 = semver("1.2.3-alpha+buildid-123");
+	const auto v2 = semver("1.2.3-alpha");
+
+	EXPECT_TRUE(v1 == v2);
+	EXPECT_TRUE(v2 == v1);
+}
 }
 
