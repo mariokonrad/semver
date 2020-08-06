@@ -73,7 +73,9 @@ public:
 	}
 
 private:
-	struct parse_error : std::runtime_error { using runtime_error::runtime_error; };
+	struct parse_error : std::runtime_error {
+		using runtime_error::runtime_error;
+	};
 
 	std::string data_;
 	const char_type * last_ = {};
@@ -290,8 +292,22 @@ inline bool operator!=(const semver & v1, const semver & v2) noexcept
 	return !(v1 == v2);
 }
 
-inline bool operator<(const semver &, const semver &) noexcept
+inline bool operator<(const semver & v1, const semver & v2) noexcept
 {
+	if (v1.major() < v2.major())
+		return true;
+	if (v1.minor() < v2.minor())
+		return true;
+	if (v1.patch() < v2.patch())
+		return true;
+
+	if (v1.major() > v2.major())
+		return false;
+	if (v1.minor() > v2.minor())
+		return false;
+	if (v1.patch() > v2.patch())
+		return false;
+
 	// TODO: implementation
 	return false;
 }
