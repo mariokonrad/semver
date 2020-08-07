@@ -40,6 +40,7 @@ add_executable(testrunner)
 target_sources(testrunner
 	PRIVATE
 		tests/test_construction.cpp
+		tests/test_construction_loose.cpp
 		tests/test_comparison.cpp
 		tests/test_string.cpp
 	)

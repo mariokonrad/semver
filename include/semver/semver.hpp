@@ -31,10 +31,17 @@ public:
 	semver(semver &&) = default;
 	semver & operator=(semver &&) = default;
 
-	semver(const std::string & s)
+	semver(const std::string & s, bool loose = false)
 		: data_(s)
 	{
 		assert(!data_.empty());
+
+		if (loose) {
+			data_.erase(std::remove_if(begin(data_), end(data_), ::isspace), end(data_));
+			data_.erase(begin(data_),
+				begin(data_) + data_.find_first_of(std::string_view("0123456789")));
+		}
+
 		last_ = data_.data() + data_.size();
 		cursor_ = data_.data();
 
