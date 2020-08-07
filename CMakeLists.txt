@@ -22,6 +22,7 @@ FetchContent_Declare(googletest
 	)
 FetchContent_MakeAvailable(googletest)
 
+### library
 add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
 	INTERFACE
@@ -34,7 +35,12 @@ target_include_directories(${PROJECT_NAME}
 	)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
+### example
+add_executable(semver-compare)
+target_sources(semver-compare PRIVATE example/semver-compare.cpp)
+target_link_libraries(semver-compare PRIVATE semver)
 
+### testing
 enable_testing()
 add_executable(testrunner)
 target_sources(testrunner

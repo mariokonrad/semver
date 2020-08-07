@@ -22,6 +22,8 @@ private:
 	using char_type = typename string_type::value_type;
 
 public:
+	using number_type = unsigned long;
+
 	~semver() = default;
 
 	semver(const semver &) = default;
@@ -48,9 +50,9 @@ public:
 		good_ = (cursor_ == last_) && !error_;
 	}
 
-	unsigned long major() const noexcept { return major_; }
-	unsigned long minor() const noexcept { return minor_; }
-	unsigned long patch() const noexcept { return patch_; }
+	number_type major() const noexcept { return major_; }
+	number_type minor() const noexcept { return minor_; }
+	number_type patch() const noexcept { return patch_; }
 	const std::string_view build() const noexcept { return build_; }
 	const std::string_view prerelease() const noexcept { return prerelease_; }
 
@@ -78,18 +80,19 @@ public:
 	}
 
 private:
-	std::string data_;
 	const char_type * last_ = {};
 	const char_type * start_ = {};
 	const char_type * cursor_ = {};
 	const char_type * error_ = nullptr;
-	bool good_ = false;
 
-	unsigned long major_ = {};
-	unsigned long minor_ = {};
-	unsigned long patch_ = {};
+	number_type major_ = {};
+	number_type minor_ = {};
+	number_type patch_ = {};
 	std::string_view prerelease_ = {};
 	std::string_view build_ = {};
+
+	std::string data_;
+	bool good_ = false;
 
 	static std::string_view token(const char_type * start, const char_type * end) noexcept
 	{
@@ -269,7 +272,7 @@ inline std::string to_string(const semver & v)
 
 inline bool operator==(const semver & v1, const semver & v2) noexcept
 {
-	return true && (v1.major() == v2.major()) && (v1.minor() == v2.minor())
+	return (v1.major() == v2.major()) && (v1.minor() == v2.minor())
 		&& (v1.patch() == v2.patch()) && (v1.prerelease() == v2.prerelease());
 }
 
@@ -336,8 +339,8 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 		if (c1num && c2num) {
 			// pure numerical comparison
 
-			unsigned long long p1n = 0u;
-			unsigned long long p2n = 0u;
+			semver::number_type p1n = 0u;
+			semver::number_type p2n = 0u;
 
 			// we ignore the return value because it was already tested to be numerical only
 			std::from_chars(p1.data() + c1, p1.data() + std::min(c1e, p1.size()), p1n);
