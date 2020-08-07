@@ -8,8 +8,10 @@
 #include <stdexcept>
 #include <cassert>
 
-namespace semver {
-inline namespace v1 {
+namespace semver
+{
+inline namespace v1
+{
 
 // Implementation of semver 2.0.0
 //
@@ -55,7 +57,8 @@ public:
 
 	std::string str() const
 	{
-		auto s = std::to_string(major()) + '.' + std::to_string(minor()) + '.' + std::to_string(patch());
+		auto s = std::to_string(major()) + '.' + std::to_string(minor()) + '.'
+			+ std::to_string(patch());
 		const auto pr = prerelease();
 		const auto b = build();
 		if (!pr.empty() || !b.empty()) {
@@ -91,7 +94,7 @@ private:
 
 	static std::string_view token(const char_type * start, const char_type * end) noexcept
 	{
-		return std::string_view{start, static_cast<std::string_view::size_type>(end - start)};
+		return std::string_view {start, static_cast<std::string_view::size_type>(end - start)};
 	}
 
 	void parse_valid_semver()
@@ -113,10 +116,7 @@ private:
 		}
 	}
 
-	void advance(int n) noexcept
-	{
-		cursor_ += std::min(n, static_cast<int>(last_ - cursor_));
-	}
+	void advance(int n) noexcept { cursor_ += std::min(n, static_cast<int>(last_ - cursor_)); }
 
 	void parse_version_core()
 	{
@@ -154,7 +154,7 @@ private:
 			advance(1);
 			return;
 		}
-		throw parse_error{"dot"};
+		throw parse_error {"dot"};
 	}
 
 	void parse_build()
@@ -192,7 +192,7 @@ private:
 	void parse_identifier()
 	{
 		if (!(is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_)))
-			throw parse_error{"identifier"};
+			throw parse_error {"identifier"};
 		while (is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))
 			advance(1);
 	}
@@ -209,7 +209,7 @@ private:
 				parse_digits();
 			return;
 		}
-		throw parse_error{"numeric_identifier"};
+		throw parse_error {"numeric_identifier"};
 	}
 
 	void parse_positive_digit()
@@ -218,33 +218,24 @@ private:
 			advance(1);
 			return;
 		}
-		throw parse_error{"positive_digit"};
+		throw parse_error {"positive_digit"};
 	}
 
 	void parse_digits()
 	{
 		if (!is_digit(cursor_))
-			throw parse_error{"digits"};
+			throw parse_error {"digits"};
 		while (is_digit(cursor_))
 			advance(1);
 	}
 
 	// low level primitives, must check for eof
 
-	bool is_eof(const char_type * p) const noexcept
-	{
-		return (p >= last_) || (*p == '\x00');
-	}
+	bool is_eof(const char_type * p) const noexcept { return (p >= last_) || (*p == '\x00'); }
 
-	bool is_dot(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (*p == '.');
-	}
+	bool is_dot(const char_type * p) const noexcept { return !is_eof(p) && (*p == '.'); }
 
-	bool is_plus(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (*p == '+');
-	}
+	bool is_plus(const char_type * p) const noexcept { return !is_eof(p) && (*p == '+'); }
 
 	bool is_positive_digit(const char_type * p) const noexcept
 	{
@@ -256,15 +247,9 @@ private:
 		return !is_eof(p) && ((*p >= '0') && (*p <= '9'));
 	}
 
-	bool is_zero(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (*p == '0');
-	}
+	bool is_zero(const char_type * p) const noexcept { return !is_eof(p) && (*p == '0'); }
 
-	bool is_dash(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (*p == '-');
-	}
+	bool is_dash(const char_type * p) const noexcept { return !is_eof(p) && (*p == '-'); }
 
 	bool is_letter(const char_type * p) const noexcept
 	{
@@ -279,12 +264,8 @@ inline std::string to_string(const semver & v)
 
 inline bool operator==(const semver & v1, const semver & v2) noexcept
 {
-	return true
-		&& (v1.major() == v2.major())
-		&& (v1.minor() == v2.minor())
-		&& (v1.patch() == v2.patch())
-		&& (v1.prerelease() == v2.prerelease())
-		;
+	return true && (v1.major() == v2.major()) && (v1.minor() == v2.minor())
+		&& (v1.patch() == v2.patch()) && (v1.prerelease() == v2.prerelease());
 }
 
 inline bool operator!=(const semver & v1, const semver & v2) noexcept
@@ -327,7 +308,8 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	//   - pure numerically has always lower precedence than alphanumerically
 	//   - larger set of fields has a higher precedence than the smaller set, if all of
 	//     preceeding identifiers are equal, example:
-	//     1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
+	//     1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2
+	//     < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
 	//
 	std::string_view::size_type c1 = 0u;
 	std::string_view::size_type c2 = 0u;
@@ -337,14 +319,16 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 		const auto c2e = p2.find('.', c2);
 
 		// numerical vs alphanumerical fields? alphanumerical alwasys wins
-		const bool c1numeric = p1.substr(c1, c1e).find_first_not_of(std::string_view("0123456789")) == std::string_view::npos;
-		const bool c2numeric = p2.substr(c2, c2e).find_first_not_of(std::string_view("0123456789")) == std::string_view::npos;
-		if (c1numeric && !c2numeric)
+		const bool c1num = p1.substr(c1, c1e).find_first_not_of(std::string_view("0123456789"))
+			== std::string_view::npos;
+		const bool c2num = p2.substr(c2, c2e).find_first_not_of(std::string_view("0123456789"))
+			== std::string_view::npos;
+		if (c1num && !c2num)
 			return true;
-		if (!c1numeric && c2numeric)
+		if (!c1num && c2num)
 			return false;
 
-		if (c1numeric && c2numeric) {
+		if (c1num && c2num) {
 			// pure numerical comparison
 
 			unsigned long long p1n = 0u;
