@@ -5,7 +5,6 @@
 #include <charconv>
 #include <string>
 #include <string_view>
-#include <stdexcept>
 #include <cassert>
 
 namespace semver
@@ -45,12 +44,8 @@ public:
 		last_ = data_.data() + data_.size();
 		cursor_ = data_.data();
 
-		try {
-			parse_valid_semver();
-			good_ = cursor_ == last_;
-		} catch (parse_error &) {
-			// left blank
-		}
+		parse_valid_semver();
+		good_ = (cursor_ == last_) && !error_;
 	}
 
 	unsigned long major() const noexcept { return major_; }
@@ -83,14 +78,11 @@ public:
 	}
 
 private:
-	struct parse_error : std::runtime_error {
-		using runtime_error::runtime_error;
-	};
-
 	std::string data_;
 	const char_type * last_ = {};
 	const char_type * start_ = {};
 	const char_type * cursor_ = {};
+	const char_type * error_ = nullptr;
 	bool good_ = false;
 
 	unsigned long major_ = {};
@@ -104,7 +96,7 @@ private:
 		return std::string_view {start, static_cast<std::string_view::size_type>(end - start)};
 	}
 
-	void parse_valid_semver()
+	void parse_valid_semver() noexcept
 	{
 		parse_version_core();
 		if (is_dash(cursor_)) {
@@ -125,7 +117,9 @@ private:
 
 	void advance(int n) noexcept { cursor_ += std::min(n, static_cast<int>(last_ - cursor_)); }
 
-	void parse_version_core()
+	void error() noexcept { error_ = cursor_; }
+
+	void parse_version_core() noexcept
 	{
 		parse_major();
 		parse_dot();
@@ -134,51 +128,51 @@ private:
 		parse_patch();
 	}
 
-	void parse_major()
+	void parse_major() noexcept
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
 		std::from_chars(start_, cursor_, major_);
 	}
 
-	void parse_minor()
+	void parse_minor() noexcept
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
 		std::from_chars(start_, cursor_, minor_);
 	}
 
-	void parse_patch()
+	void parse_patch() noexcept
 	{
 		start_ = cursor_;
 		parse_numeric_identifier();
 		std::from_chars(start_, cursor_, patch_);
 	}
 
-	void parse_dot()
+	void parse_dot() noexcept
 	{
 		if (is_dot(cursor_)) {
 			advance(1);
 			return;
 		}
-		throw parse_error {"dot"};
+		error();
 	}
 
-	void parse_build()
+	void parse_build() noexcept
 	{
 		start_ = cursor_;
 		parse_dot_separated_build_identifier();
 		build_ = token(start_, cursor_);
 	}
 
-	void parse_pre_release()
+	void parse_pre_release() noexcept
 	{
 		start_ = cursor_;
 		parse_dot_separated_prerelease_identifier();
 		prerelease_ = token(start_, cursor_);
 	}
 
-	void parse_dot_separated_build_identifier()
+	void parse_dot_separated_build_identifier() noexcept
 	{
 		parse_identifier();
 		while (is_dot(cursor_)) {
@@ -187,7 +181,7 @@ private:
 		}
 	}
 
-	void parse_dot_separated_prerelease_identifier()
+	void parse_dot_separated_prerelease_identifier() noexcept
 	{
 		parse_identifier();
 		while (is_dot(cursor_)) {
@@ -196,15 +190,17 @@ private:
 		}
 	}
 
-	void parse_identifier()
+	void parse_identifier() noexcept
 	{
-		if (!(is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_)))
-			throw parse_error {"identifier"};
+		if (!(is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))) {
+			error();
+			return;
+		}
 		while (is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))
 			advance(1);
 	}
 
-	void parse_numeric_identifier()
+	void parse_numeric_identifier() noexcept
 	{
 		if (is_zero(cursor_)) {
 			advance(1);
@@ -216,22 +212,24 @@ private:
 				parse_digits();
 			return;
 		}
-		throw parse_error {"numeric_identifier"};
+		error();
 	}
 
-	void parse_positive_digit()
+	void parse_positive_digit() noexcept
 	{
 		if (is_positive_digit(cursor_)) {
 			advance(1);
 			return;
 		}
-		throw parse_error {"positive_digit"};
+		error();
 	}
 
-	void parse_digits()
+	void parse_digits() noexcept
 	{
-		if (!is_digit(cursor_))
-			throw parse_error {"digits"};
+		if (!is_digit(cursor_)) {
+			error();
+			return;
+		}
 		while (is_digit(cursor_))
 			advance(1);
 	}
