@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <charconv>
+#include <functional>
 #include <string>
 #include <string_view>
 #include <cassert>
@@ -39,8 +40,7 @@ public:
 
 		if (loose) {
 			data_.erase(std::remove_if(begin(data_), end(data_), ::isspace), end(data_));
-			data_.erase(begin(data_),
-				begin(data_) + data_.find_first_of(std::string_view("0123456789")));
+			data_.erase(begin(data_), std::find_if(begin(data_), end(data_), ::isdigit));
 		}
 
 		last_ = data_.data() + data_.size();
@@ -327,10 +327,13 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 		const auto c2e = p2.find('.', c2);
 
 		// numerical vs alphanumerical fields? alphanumerical alwasys wins
-		const bool c1num = p1.substr(c1, c1e).find_first_not_of(std::string_view("0123456789"))
-			== std::string_view::npos;
-		const bool c2num = p2.substr(c2, c2e).find_first_not_of(std::string_view("0123456789"))
-			== std::string_view::npos;
+		auto find_alpha_in_substr = [](const auto & s, auto start_pos, auto end_pos) {
+			const auto sub = s.substr(start_pos, end_pos);
+			return std::find_if(begin(sub), end(sub), std::not_fn(::isdigit)) == end(sub);
+		};
+
+		const bool c1num = find_alpha_in_substr(p1, c1, c1e);
+		const bool c2num = find_alpha_in_substr(p2, c2, c2e);
 		if (c1num && !c2num)
 			return true;
 		if (!c1num && c2num)
