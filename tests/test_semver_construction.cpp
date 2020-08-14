@@ -9,6 +9,13 @@ class test_semver_construction : public ::testing::Test {};
 
 #define EXPECT_SV_EQ(s, e) EXPECT_EQ(std::string_view(s), (e))
 
+TEST_F(test_semver_construction, empty)
+{
+	const auto v = semver("");
+
+	ASSERT_FALSE(v.ok());
+}
+
 TEST_F(test_semver_construction, plain_1)
 {
 	const auto v = semver("1.2.3");

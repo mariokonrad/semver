@@ -50,6 +50,10 @@ target_sources(testrunner
 		tests/test_semver_construction_loose.cpp
 		tests/test_semver_comparison.cpp
 		tests/test_semver_string.cpp
+		tests/test_range_construction.cpp
+		tests/test_range_comparison.cpp
+		tests/test_range_intersection.cpp
+		tests/test_range_query.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE

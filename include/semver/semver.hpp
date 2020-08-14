@@ -6,7 +6,6 @@
 #include <functional>
 #include <string>
 #include <string_view>
-#include <cassert>
 
 namespace semver
 {
@@ -34,8 +33,6 @@ public:
 	semver(const std::string & s, bool loose = false)
 		: data_(s)
 	{
-		assert(!data_.empty());
-
 		if (loose) {
 			data_.erase(std::remove_if(begin(data_), end(data_), ::isspace), end(data_));
 			data_.erase(begin(data_), std::find_if(begin(data_), end(data_), ::isdigit));
@@ -44,8 +41,10 @@ public:
 		last_ = data_.data() + data_.size();
 		cursor_ = data_.data();
 
-		parse_valid_semver();
-		good_ = (cursor_ == last_) && !error_;
+		if (!data_.empty()) {
+			parse_valid_semver();
+			good_ = (cursor_ == last_) && !error_;
+		}
 	}
 
 	number_type major() const noexcept { return major_; }
