@@ -10,7 +10,7 @@ class test_range_query : public ::testing::Test {};
 
 TEST_F(test_range_query, outside)
 {
-	const auto r = range(">1.2.3 <2.0.0 3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
 
 	ASSERT_TRUE(r.ok());
 	EXPECT_TRUE(r.outside(semver("1.0.0")));
@@ -28,7 +28,7 @@ TEST_F(test_range_query, outside)
 
 TEST_F(test_range_query, satisfies)
 {
-	const auto r = range(">1.2.3 <2.0.0 3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
 
 	ASSERT_TRUE(r.ok());
 	EXPECT_FALSE(r.satisfies(semver("1.0.0")));
@@ -48,7 +48,7 @@ TEST_F(test_range_query, max)
 	EXPECT_EQ(semver("2.0.0"), range("2.0.0").max());
 	EXPECT_EQ(semver("2.0.0"), range("<=2.0.0").max());
 	EXPECT_EQ(semver("1.99999.99999"), range("<2.0.0").max());
-	EXPECT_EQ(semver("3.0.0"), range("<2.0.0 3.0.0").max());
+	EXPECT_EQ(semver("3.0.0"), range("<2.0.0 || 3.0.0").max());
 	EXPECT_EQ(semver("99999.99999.99999"), range(">2.0.0").max());
 	EXPECT_EQ(semver("99999.99999.99999"), range(">=2.0.0").max());
 	EXPECT_EQ(semver("2.0.0"), range(">1.2.3 <=2.0.0").max());
@@ -59,7 +59,7 @@ TEST_F(test_range_query, min)
 	EXPECT_EQ(semver("2.0.0"), range("2.0.0").min());
 	EXPECT_EQ(semver("0.0.0"), range("<=2.0.0").min());
 	EXPECT_EQ(semver("0.0.0"), range("<2.0.0").min());
-	EXPECT_EQ(semver("0.0.0"), range("<2.0.0 3.0.0").min());
+	EXPECT_EQ(semver("0.0.0"), range("<2.0.0 || 3.0.0").min());
 	EXPECT_EQ(semver("2.0.1"), range(">2.0.0").min());
 	EXPECT_EQ(semver("2.0.0"), range(">=2.0.0").min());
 	EXPECT_EQ(semver("1.2.3"), range(">=1.2.3 <2.0.0").min());
@@ -67,7 +67,7 @@ TEST_F(test_range_query, min)
 
 TEST_F(test_range_query, max_satisfying)
 {
-	const auto r = range(">1.2.3 <2.0.0 3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
 
 	EXPECT_EQ(semver("1.11.0"),
 		r.max_satisfying({semver("1.2.0"), semver("1.5.0"), semver("1.11.0")}));
@@ -77,7 +77,7 @@ TEST_F(test_range_query, max_satisfying)
 
 TEST_F(test_range_query, min_satisfying)
 {
-	const auto r = range(">1.2.3 <2.0.0 3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
 
 	EXPECT_EQ(semver("1.5.0"),
 		r.min_satisfying({semver("1.2.0"), semver("1.5.0"), semver("1.11.0")}));

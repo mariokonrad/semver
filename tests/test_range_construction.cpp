@@ -65,14 +65,14 @@ TEST_F(test_range_construction, set_2)
 
 TEST_F(test_range_construction, set_3)
 {
-	const auto r = range(">1.2.3 <2.0.0 3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
 
 	ASSERT_TRUE(r.ok());
 }
 
 TEST_F(test_range_construction, set_4)
 {
-	const auto r = range(">1.2.3 <2.0.0 =3.0.0");
+	const auto r = range(">1.2.3 <2.0.0 || =3.0.0");
 
 	ASSERT_TRUE(r.ok());
 }
