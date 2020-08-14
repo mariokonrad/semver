@@ -1,7 +1,7 @@
 #ifndef SEMVER_RANGE_HPP
 #define SEMVER_RANGE_HPP
 
-#include <semver/sermver.hpp>
+#include <semver/semver.hpp>
 
 namespace semver
 {

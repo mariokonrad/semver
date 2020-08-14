@@ -27,6 +27,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_sources(${PROJECT_NAME}
 	INTERFACE
 		include/semver/semver.hpp
+		include/semver/range.hpp
 	)
 target_include_directories(${PROJECT_NAME}
 	INTERFACE
