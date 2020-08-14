@@ -1,5 +1,5 @@
-#ifndef SEMVER_HPP
-#define SEMVER_HPP
+#ifndef SERMVER_SEMVER_HPP
+#define SERMVER_SEMVER_HPP
 
 #include <algorithm>
 #include <charconv>
@@ -18,9 +18,7 @@ inline namespace v1
 class semver
 {
 private:
-	using string_type = std::string;
-	using iterator_type = typename string_type::const_iterator;
-	using char_type = typename string_type::value_type;
+	using char_type = std::string::value_type;
 
 public:
 	using number_type = unsigned long;
