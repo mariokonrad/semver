@@ -51,8 +51,8 @@ public:
 	number_type major() const noexcept { return major_; }
 	number_type minor() const noexcept { return minor_; }
 	number_type patch() const noexcept { return patch_; }
-	const std::string_view build() const noexcept { return build_; }
-	const std::string_view prerelease() const noexcept { return prerelease_; }
+	std::string_view build() const noexcept { return build_; }
+	std::string_view prerelease() const noexcept { return prerelease_; }
 
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
@@ -325,7 +325,7 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 		const auto c2e = p2.find('.', c2);
 
 		// numerical vs alphanumerical fields? alphanumerical alwasys wins
-		auto find_alpha_in_substr = [](const auto & s, auto start_pos, auto end_pos) {
+		auto find_alpha_in_substr = [](std::string_view s, auto start_pos, auto end_pos) {
 			const auto sub = s.substr(start_pos, end_pos);
 			return std::find_if(begin(sub), end(sub), std::not_fn(::isdigit)) == end(sub);
 		};
