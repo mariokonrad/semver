@@ -162,27 +162,18 @@ private:
 	void parse_build() noexcept
 	{
 		start_ = cursor_;
-		parse_dot_separated_build_identifier();
+		parse_dot_separated_identifier();
 		build_ = token(start_, cursor_);
 	}
 
 	void parse_pre_release() noexcept
 	{
 		start_ = cursor_;
-		parse_dot_separated_prerelease_identifier();
+		parse_dot_separated_identifier();
 		prerelease_ = token(start_, cursor_);
 	}
 
-	void parse_dot_separated_build_identifier() noexcept
-	{
-		parse_identifier();
-		while (is_dot(cursor_)) {
-			parse_dot();
-			parse_identifier();
-		}
-	}
-
-	void parse_dot_separated_prerelease_identifier() noexcept
+	void parse_dot_separated_identifier() noexcept
 	{
 		parse_identifier();
 		while (is_dot(cursor_)) {
