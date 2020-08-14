@@ -227,11 +227,16 @@ private:
 
 	// low level primitives, must check for eof
 
+	bool peek(char_type c, const char_type * p) const noexcept
+	{
+		return !is_eof(p) && (*p == c);
+	}
+
 	bool is_eof(const char_type * p) const noexcept { return (p >= last_) || (*p == '\x00'); }
-
-	bool is_dot(const char_type * p) const noexcept { return !is_eof(p) && (*p == '.'); }
-
-	bool is_plus(const char_type * p) const noexcept { return !is_eof(p) && (*p == '+'); }
+	bool is_dot(const char_type * p) const noexcept { return peek('.', p); }
+	bool is_plus(const char_type * p) const noexcept { return peek('+', p); }
+	bool is_dash(const char_type * p) const noexcept { return peek('-', p); }
+	bool is_zero(const char_type * p) const noexcept { return peek('0', p); }
 
 	bool is_positive_digit(const char_type * p) const noexcept
 	{
@@ -242,10 +247,6 @@ private:
 	{
 		return !is_eof(p) && ((*p >= '0') && (*p <= '9'));
 	}
-
-	bool is_zero(const char_type * p) const noexcept { return !is_eof(p) && (*p == '0'); }
-
-	bool is_dash(const char_type * p) const noexcept { return !is_eof(p) && (*p == '-'); }
 
 	bool is_letter(const char_type * p) const noexcept
 	{
