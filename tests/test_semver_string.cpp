@@ -5,11 +5,11 @@ namespace {
 
 using semver::semver;
 
-class test_string : public ::testing::Test {};
+class test_semver_string : public ::testing::Test {};
 
 #define EXPECT_SEMVER_STRING(s) EXPECT_STREQ((s), semver(s).str().c_str())
 
-TEST_F(test_string, strings)
+TEST_F(test_semver_string, strings)
 {
 	EXPECT_SEMVER_STRING("1.2.3");
 	EXPECT_SEMVER_STRING("0.0.0");

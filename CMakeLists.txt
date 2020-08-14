@@ -45,10 +45,10 @@ enable_testing()
 add_executable(testrunner)
 target_sources(testrunner
 	PRIVATE
-		tests/test_construction.cpp
-		tests/test_construction_loose.cpp
-		tests/test_comparison.cpp
-		tests/test_string.cpp
+		tests/test_semver_construction.cpp
+		tests/test_semver_construction_loose.cpp
+		tests/test_semver_comparison.cpp
+		tests/test_semver_string.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE

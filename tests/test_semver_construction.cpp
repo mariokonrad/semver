@@ -5,11 +5,11 @@ namespace {
 
 using semver::semver;
 
-class test_construction : public ::testing::Test {};
+class test_semver_construction : public ::testing::Test {};
 
 #define EXPECT_SV_EQ(s, e) EXPECT_EQ(std::string_view(s), (e))
 
-TEST_F(test_construction, plain_1)
+TEST_F(test_semver_construction, plain_1)
 {
 	const auto v = semver("1.2.3");
 
@@ -21,7 +21,7 @@ TEST_F(test_construction, plain_1)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, plain_2)
+TEST_F(test_semver_construction, plain_2)
 {
 	const auto v = semver("0.0.0");
 
@@ -33,7 +33,7 @@ TEST_F(test_construction, plain_2)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, with_numeric_build)
+TEST_F(test_semver_construction, with_numeric_build)
 {
 	const auto v = semver("1.2.3+123");
 
@@ -45,7 +45,7 @@ TEST_F(test_construction, with_numeric_build)
 	EXPECT_SV_EQ("123", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_build)
+TEST_F(test_semver_construction, with_alphanumeric_build)
 {
 	const auto v = semver("1.2.3+abc123");
 
@@ -57,7 +57,7 @@ TEST_F(test_construction, with_alphanumeric_build)
 	EXPECT_SV_EQ("abc123", v.build());
 }
 
-TEST_F(test_construction, with_numeric_prerelease)
+TEST_F(test_semver_construction, with_numeric_prerelease)
 {
 	const auto v = semver("1.2.3-123");
 
@@ -69,7 +69,7 @@ TEST_F(test_construction, with_numeric_prerelease)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease)
 {
 	const auto v = semver("1.2.3-abc123");
 
@@ -81,7 +81,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, with_numeric_prerelease_numeric_build)
+TEST_F(test_semver_construction, with_numeric_prerelease_numeric_build)
 {
 	const auto v = semver("1.2.3-456+123");
 
@@ -93,7 +93,7 @@ TEST_F(test_construction, with_numeric_prerelease_numeric_build)
 	EXPECT_SV_EQ("123", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_numeric_build_1)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_1)
 {
 	const auto v = semver("1.2.3-456abc+123");
 
@@ -105,7 +105,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_numeric_build_1)
 	EXPECT_SV_EQ("123", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_numeric_build_2)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_2)
 {
 	const auto v = semver("1.2.3-abc456+123");
 
@@ -117,7 +117,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_numeric_build_2)
 	EXPECT_SV_EQ("123", v.build());
 }
 
-TEST_F(test_construction, with_numeric_prerelease_alphanumeric_build_1)
+TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_1)
 {
 	const auto v = semver("1.2.3-456+abc123");
 
@@ -129,7 +129,7 @@ TEST_F(test_construction, with_numeric_prerelease_alphanumeric_build_1)
 	EXPECT_SV_EQ("abc123", v.build());
 }
 
-TEST_F(test_construction, with_numeric_prerelease_alphanumeric_build_2)
+TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_2)
 {
 	const auto v = semver("1.2.3-456+123abc");
 
@@ -141,7 +141,7 @@ TEST_F(test_construction, with_numeric_prerelease_alphanumeric_build_2)
 	EXPECT_SV_EQ("123abc", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_1)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_1)
 {
 	const auto v = semver("1.2.3-abc456+abc123");
 
@@ -153,7 +153,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_1)
 	EXPECT_SV_EQ("abc123", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_2)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_2)
 {
 	const auto v = semver("1.2.3-456abc+abc123");
 
@@ -165,7 +165,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_2)
 	EXPECT_SV_EQ("abc123", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_3)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_3)
 {
 	const auto v = semver("1.2.3-abc456+123abc");
 
@@ -177,7 +177,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_3)
 	EXPECT_SV_EQ("123abc", v.build());
 }
 
-TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_4)
+TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_4)
 {
 	const auto v = semver("1.2.3-456abc+123abc");
 
@@ -189,7 +189,7 @@ TEST_F(test_construction, with_alphanumeric_prerelease_alphanumeric_build_4)
 	EXPECT_SV_EQ("123abc", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_1)
+TEST_F(test_semver_construction, example_from_semver_org_1)
 {
 	const auto v = semver("1.0.0-alpha");
 
@@ -201,7 +201,7 @@ TEST_F(test_construction, example_from_semver_org_1)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_2)
+TEST_F(test_semver_construction, example_from_semver_org_2)
 {
 	const auto v = semver("1.0.0-alpha.1");
 
@@ -213,7 +213,7 @@ TEST_F(test_construction, example_from_semver_org_2)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_3)
+TEST_F(test_semver_construction, example_from_semver_org_3)
 {
 	const auto v = semver("1.0.0-alpha.beta");
 
@@ -225,7 +225,7 @@ TEST_F(test_construction, example_from_semver_org_3)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_4)
+TEST_F(test_semver_construction, example_from_semver_org_4)
 {
 	const auto v = semver("1.0.0-beta.2");
 
@@ -237,7 +237,7 @@ TEST_F(test_construction, example_from_semver_org_4)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_5)
+TEST_F(test_semver_construction, example_from_semver_org_5)
 {
 	const auto v = semver("1.0.0-beta.11");
 
@@ -249,7 +249,7 @@ TEST_F(test_construction, example_from_semver_org_5)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_6)
+TEST_F(test_semver_construction, example_from_semver_org_6)
 {
 	const auto v = semver("1.0.0-rc.1");
 
@@ -261,7 +261,7 @@ TEST_F(test_construction, example_from_semver_org_6)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_7)
+TEST_F(test_semver_construction, example_from_semver_org_7)
 {
 	const auto v = semver("1.0.0-alpha+001");
 
@@ -273,7 +273,7 @@ TEST_F(test_construction, example_from_semver_org_7)
 	EXPECT_SV_EQ("001", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_8)
+TEST_F(test_semver_construction, example_from_semver_org_8)
 {
 	const auto v = semver("1.0.0+20130313144700");
 
@@ -285,7 +285,7 @@ TEST_F(test_construction, example_from_semver_org_8)
 	EXPECT_SV_EQ("20130313144700", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_9)
+TEST_F(test_semver_construction, example_from_semver_org_9)
 {
 	const auto v = semver("1.0.0-beta+exp.sha.5114f85");
 
@@ -297,7 +297,7 @@ TEST_F(test_construction, example_from_semver_org_9)
 	EXPECT_SV_EQ("exp.sha.5114f85", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_10)
+TEST_F(test_semver_construction, example_from_semver_org_10)
 {
 	const auto v = semver("1.0.0+21AF26D3--117B344092BD");
 
@@ -309,7 +309,7 @@ TEST_F(test_construction, example_from_semver_org_10)
 	EXPECT_SV_EQ("21AF26D3--117B344092BD", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_11)
+TEST_F(test_semver_construction, example_from_semver_org_11)
 {
 	const auto v = semver("1.0.0-x.7.z.92");
 
@@ -321,7 +321,7 @@ TEST_F(test_construction, example_from_semver_org_11)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_12)
+TEST_F(test_semver_construction, example_from_semver_org_12)
 {
 	const auto v = semver("1.0.0-0.3.7");
 
@@ -333,7 +333,7 @@ TEST_F(test_construction, example_from_semver_org_12)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, example_from_semver_org_13)
+TEST_F(test_semver_construction, example_from_semver_org_13)
 {
 	const auto v = semver("1.0.0-x-y-z.-");
 
@@ -345,35 +345,35 @@ TEST_F(test_construction, example_from_semver_org_13)
 	EXPECT_SV_EQ("", v.build());
 }
 
-TEST_F(test_construction, failing_multiple_pluses)
+TEST_F(test_semver_construction, failing_multiple_pluses)
 {
 	const auto v = semver("1.0.0+alpha+beta");
 
 	EXPECT_FALSE(v.ok());
 }
 
-TEST_F(test_construction, failing_consecutive_multiple_pluses)
+TEST_F(test_semver_construction, failing_consecutive_multiple_pluses)
 {
 	const auto v = semver("1.0.0++beta");
 
 	EXPECT_FALSE(v.ok());
 }
 
-TEST_F(test_construction, failing_empty_build)
+TEST_F(test_semver_construction, failing_empty_build)
 {
 	const auto v = semver("1.0.0+");
 
 	EXPECT_FALSE(v.ok());
 }
 
-TEST_F(test_construction, failing_empty_prerelease)
+TEST_F(test_semver_construction, failing_empty_prerelease)
 {
 	const auto v = semver("1.0.0-");
 
 	EXPECT_FALSE(v.ok());
 }
 
-TEST_F(test_construction, failing_empty_prerelease_empty_build)
+TEST_F(test_semver_construction, failing_empty_prerelease_empty_build)
 {
 	const auto v = semver("1.0.0-+");
 
