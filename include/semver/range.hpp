@@ -102,8 +102,7 @@ public:
 	}
 
 	lexer(std::string_view s)
-		: first_(s.data())
-		, last_(s.data() + s.size())
+		: last_(s.data() + s.size())
 		, cursor_(s.data())
 	{
 	}
@@ -148,8 +147,12 @@ public:
 		return token::eof;
 	}
 
+	std::string_view text() noexcept
+	{
+		return token_;
+	}
+
 private:
-	const char_type * first_ = nullptr;
 	const char_type * last_ = nullptr;
 	const char_type * start_ = nullptr;
 	const char_type * cursor_ = nullptr;
@@ -225,7 +228,7 @@ private:
 
 	token lex_op_partial() noexcept
 	{
-		if (is_eq())
+		if (is_eq() || is_lt() || is_gt())
 			advance(1);
 		else
 			advance(2);
@@ -397,18 +400,26 @@ private:
 	detail::lexer lex_;
 	detail::lexer::token token_ = detail::lexer::token::eof;
 	detail::lexer::token next_ = detail::lexer::token::eof;
+	std::string_view token_text_;
+	std::string_view next_text_;
 
 	void start() noexcept
 	{
 		token_ = lex_.scan();
+		token_text_ = lex_.text();
 		next_ = lex_.scan();
+		next_text_ = lex_.text();
 	}
 
 	void advance() noexcept
 	{
 		token_ = next_;
+		token_text_ = next_text_;
 		next_ = lex_.scan();
+		next_text_ = lex_.text();
 	}
+
+	std::string_view token_text() noexcept { return token_text_; }
 
 	void error() noexcept { good_ = false; }
 
@@ -433,6 +444,7 @@ private:
 		parse_range();
 		while (is_logical_or(token_)) {
 			advance(); // logial-or
+			std::cout << "### logical-or\n";
 			parse_range();
 		}
 
@@ -454,18 +466,22 @@ private:
 
 		while (!is_eof(token_)) {
 			if (is_caret(token_)) {
+				std::cout << "### caret partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_tilde(token_)) {
+				std::cout << "### tilde partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_op(token_)) {
+				std::cout << "### op partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
+				std::cout << "### partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
