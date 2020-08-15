@@ -2,6 +2,8 @@
 #define SEMVER_RANGE_HPP
 
 #include <semver/semver.hpp>
+#include <memory>
+#include <optional>
 #include <iostream>
 #include <cassert>
 
@@ -318,6 +320,67 @@ private:
 		error();
 	}
 };
+
+enum class node_type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
+
+class node
+{
+private:
+	// enables prevention to create an object directly. from here:
+	// https://rienajouter.blogspot.com/2014/10/makeshared-and-makeunique-for-classes.html
+	struct ctor_tag {
+	};
+
+public:
+	~node() = default;
+
+	node(const node &) = delete;
+	node & operator=(const node &) = delete;
+
+	node(node &&) = default;
+	node & operator=(node &&) = default;
+
+	static node create_and(std::unique_ptr<node> left, std::unique_ptr<node> right)
+	{
+		return node(ctor_tag(), node_type::op_and, std::move(left), std::move(right));
+	}
+
+	static node create_or(std::unique_ptr<node> left, std::unique_ptr<node> right)
+	{
+		return node(ctor_tag(), node_type::op_or, std::move(left), std::move(right));
+	}
+
+	static node create_eq(const semver & s) { return {ctor_tag(), node_type::op_eq, s}; }
+	static node create_lt(const semver & s) { return {ctor_tag(), node_type::op_lt, s}; }
+	static node create_le(const semver & s) { return {ctor_tag(), node_type::op_le, s}; }
+	static node create_gt(const semver & s) { return {ctor_tag(), node_type::op_gt, s}; }
+	static node create_ge(const semver & s) { return {ctor_tag(), node_type::op_ge, s}; }
+
+	node(ctor_tag, node_type t, const semver & s)
+		: type_(t)
+		, version_(s)
+	{
+	}
+
+	node(ctor_tag, node_type t, std::unique_ptr<node> left, std::unique_ptr<node> right)
+		: type_(t)
+		, left_(std::move(left))
+		, right_(std::move(right))
+	{
+	}
+
+	bool eval(const semver &) const noexcept
+	{
+		// TODO: implementation
+		return false;
+	}
+
+private:
+	node_type type_;
+	std::unique_ptr<node> left_;
+	std::unique_ptr<node> right_;
+	std::optional<semver> version_;
+};
 }
 
 static std::string trim(std::string s)
@@ -402,6 +465,8 @@ private:
 	detail::lexer::token next_ = detail::lexer::token::eof;
 	std::string_view token_text_;
 	std::string_view next_text_;
+
+	std::unique_ptr<detail::node> ast_;
 
 	void start() noexcept
 	{
