@@ -55,6 +55,7 @@ target_sources(testrunner
 		tests/test_range_intersection.cpp
 		tests/test_range_query.cpp
 		tests/test_range_node.cpp
+		tests/test_range_lexer.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE
