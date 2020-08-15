@@ -454,9 +454,11 @@ private:
 	void parse_range() noexcept
 	{
 		if (is_partial(token_) && is_dash(next_)) {
+			auto sv = token_text();
 			advance(); // partial
 			advance(); // dash
 			if (is_partial(token_)) {
+				std::cout << "### hyphen ["<< sv <<"] - ["<<token_text()<<"]\n";
 				advance();
 				return;
 			}
