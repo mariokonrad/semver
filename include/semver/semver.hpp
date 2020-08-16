@@ -276,15 +276,16 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	// of them is different, it is already decided.
 	if (v1.major() < v2.major())
 		return true;
-	if (v1.minor() < v2.minor())
-		return true;
-	if (v1.patch() < v2.patch())
-		return true;
-
 	if (v1.major() > v2.major())
 		return false;
+
+	if (v1.minor() < v2.minor())
+		return true;
 	if (v1.minor() > v2.minor())
 		return false;
+
+	if (v1.patch() < v2.patch())
+		return true;
 	if (v1.patch() > v2.patch())
 		return false;
 

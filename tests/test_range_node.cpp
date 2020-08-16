@@ -23,7 +23,7 @@ TEST_F(test_range_node, eq)
 
 TEST_F(test_range_node, lt)
 {
-	const auto n = node::create_eq(semver("1.2.3"));
+	const auto n = node::create_lt(semver("1.2.3"));
 
 	EXPECT_FALSE(n.eval(semver("1.2.3")));
 	EXPECT_TRUE(n.eval(semver("1.2.2")));
@@ -36,7 +36,7 @@ TEST_F(test_range_node, lt)
 
 TEST_F(test_range_node, le)
 {
-	const auto n = node::create_eq(semver("1.2.3"));
+	const auto n = node::create_le(semver("1.2.3"));
 
 	EXPECT_TRUE(n.eval(semver("1.2.3")));
 	EXPECT_TRUE(n.eval(semver("1.2.2")));
@@ -49,7 +49,7 @@ TEST_F(test_range_node, le)
 
 TEST_F(test_range_node, gt)
 {
-	const auto n = node::create_eq(semver("1.2.3"));
+	const auto n = node::create_gt(semver("1.2.3"));
 
 	EXPECT_FALSE(n.eval(semver("1.2.3")));
 	EXPECT_FALSE(n.eval(semver("1.2.2")));
@@ -62,7 +62,7 @@ TEST_F(test_range_node, gt)
 
 TEST_F(test_range_node, ge)
 {
-	const auto n = node::create_eq(semver("1.2.3"));
+	const auto n = node::create_ge(semver("1.2.3"));
 
 	EXPECT_TRUE(n.eval(semver("1.2.3")));
 	EXPECT_FALSE(n.eval(semver("1.2.2")));
@@ -73,7 +73,7 @@ TEST_F(test_range_node, ge)
 	EXPECT_TRUE(n.eval(semver("2.2.3")));
 }
 
-TEST_F(test_range_node, or)
+TEST_F(test_range_node, or_1)
 {
 	const auto n = node::create_or(
 		std::make_unique<node>(node::create_eq(semver("1.2.3"))),
@@ -90,7 +90,24 @@ TEST_F(test_range_node, or)
 	EXPECT_FALSE(n.eval(semver("2.2.3")));
 }
 
-TEST_F(test_range_node, and)
+TEST_F(test_range_node, or_2)
+{
+	const auto n = node::create_or(
+		std::make_unique<node>(node::create_lt(semver("1.3.0"))),
+		std::make_unique<node>(node::create_eq(semver("2.3.4")))
+		);
+
+	EXPECT_TRUE(n.eval(semver("2.3.4")));
+	EXPECT_TRUE(n.eval(semver("1.2.3")));
+	EXPECT_TRUE(n.eval(semver("1.2.2")));
+	EXPECT_TRUE(n.eval(semver("1.2.4")));
+	EXPECT_FALSE(n.eval(semver("1.3.0")));
+	EXPECT_FALSE(n.eval(semver("1.3.3")));
+	EXPECT_TRUE(n.eval(semver("0.2.3")));
+	EXPECT_FALSE(n.eval(semver("2.2.3")));
+}
+
+TEST_F(test_range_node, and_1)
 {
 	const auto n = node::create_and(
 		std::make_unique<node>(node::create_gt(semver("1.2.3"))),
@@ -99,10 +116,10 @@ TEST_F(test_range_node, and)
 
 	EXPECT_FALSE(n.eval(semver("1.2.3")));
 	EXPECT_FALSE(n.eval(semver("3.2.1")));
-	EXPECT_TRUE(n.eval(semver("1.2.2")));
+	EXPECT_FALSE(n.eval(semver("1.2.2")));
 	EXPECT_TRUE(n.eval(semver("1.2.4")));
 	EXPECT_FALSE(n.eval(semver("1.1.3")));
-	EXPECT_TRUE(n.eval(semver("1.3.3")));
+	EXPECT_FALSE(n.eval(semver("1.3.3")));
 	EXPECT_FALSE(n.eval(semver("0.2.3")));
 	EXPECT_FALSE(n.eval(semver("2.2.3")));
 }

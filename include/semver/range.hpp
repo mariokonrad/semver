@@ -321,10 +321,11 @@ private:
 	}
 };
 
-enum class node_type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
-
 class node
 {
+private:
+	enum class node_type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
+
 public:
 	~node() = default;
 
@@ -350,9 +351,24 @@ public:
 	static node create_gt(const semver & s) { return {node_type::op_gt, s}; }
 	static node create_ge(const semver & s) { return {node_type::op_ge, s}; }
 
-	bool eval(const semver &) const noexcept
+	bool eval(const semver & v) const noexcept
 	{
-		// TODO: implementation
+		switch (type_) {
+			case node_type::op_and:
+				return left_->eval(v) && right_->eval(v);
+			case node_type::op_or:
+				return left_->eval(v) || right_->eval(v);
+			case node_type::op_eq:
+				return v == *version_;
+			case node_type::op_lt:
+				return v < *version_;
+			case node_type::op_le:
+				return v <= *version_;
+			case node_type::op_gt:
+				return v > *version_;
+			case node_type::op_ge:
+				return v >= *version_;
+		}
 		return false;
 	}
 

@@ -181,5 +181,10 @@ TEST_F(test_semver_comparison, equality_6)
 	EXPECT_TRUE(v1 == v2);
 	EXPECT_TRUE(v2 == v1);
 }
+
+TEST_F(test_semver_comparison, less)
+{
+	EXPECT_FALSE(semver("2.2.3") < semver("1.3.0"));
+}
 }
 
