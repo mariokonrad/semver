@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <charconv>
 #include <functional>
+#include <limits>
 #include <string>
 #include <string_view>
 
@@ -14,7 +15,7 @@ inline namespace v1
 
 // Implementation of semver 2.0.0
 //
-class semver
+class semver final
 {
 private:
 	using char_type = std::string::value_type;
@@ -76,6 +77,16 @@ public:
 		return s;
 	}
 
+	static semver invalid() noexcept { return semver(); }
+
+	static semver min() noexcept { return semver(0u, 0u, 0u); }
+
+	static semver max() noexcept
+	{
+		return semver(std::numeric_limits<number_type>::max(),
+			std::numeric_limits<number_type>::max(), std::numeric_limits<number_type>::max());
+	}
+
 private:
 	const char_type * last_ = {};
 	const char_type * start_ = {};
@@ -90,6 +101,16 @@ private:
 
 	std::string data_;
 	bool good_ = false;
+
+	semver() {}
+
+	semver(number_type major, number_type minor, number_type patch)
+		: major_(major)
+		, minor_(minor)
+		, patch_(patch)
+		, good_(true)
+	{
+	}
 
 	static std::string_view token(const char_type * start, const char_type * end) noexcept
 	{

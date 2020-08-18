@@ -56,6 +56,7 @@ target_sources(testrunner
 		tests/test_range_query.cpp
 		tests/test_range_node.cpp
 		tests/test_range_lexer.cpp
+		tests/test_range_bounds.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE
@@ -71,7 +72,6 @@ target_link_libraries(testrunner
 		gmock_main
 		${PROJECT_NAME}
 	)
-add_test(unittest testrunner)
-#include(GoogleTest)
-#gtest_discover_tests(testrunner)
+include(GoogleTest)
+gtest_add_tests(TARGET testrunner)
 

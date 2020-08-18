@@ -4,6 +4,7 @@
 #include <semver/semver.hpp>
 #include <memory>
 #include <optional>
+#include <deque>
 #include <iostream>
 #include <cassert>
 
@@ -13,6 +14,9 @@ inline namespace v1
 {
 
 /*
+https://github.com/npm/node-semver#versions
+https://semver.npmjs.com/
+
 https://docs.npmjs.com/misc/semver
 
 BNF:
@@ -63,7 +67,7 @@ cheat sheet: https://devhints.io/semver
 
 namespace detail
 {
-class lexer
+class lexer final
 {
 private:
 	using char_type = std::string_view::value_type;
@@ -321,7 +325,7 @@ private:
 	}
 };
 
-class node
+class node final
 {
 private:
 	enum class node_type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
@@ -391,6 +395,18 @@ private:
 	{
 	}
 };
+
+inline semver lower_bound(std::string_view) noexcept
+{
+	// TODO: implementation (handle wildcards)
+	return semver::min();
+}
+
+inline semver upper_bound(std::string_view) noexcept
+{
+	// TODO: implementation (handle wildcards)
+	return semver::max();
+}
 }
 
 static std::string trim(std::string s)
@@ -401,7 +417,7 @@ static std::string trim(std::string s)
 	return (b != std::string::npos) ? s.substr(b, e - b + 1) : "";
 }
 
-class range
+class range final
 {
 private:
 	using char_type = std::string::value_type;
@@ -477,6 +493,7 @@ private:
 	std::string_view next_text_;
 
 	std::unique_ptr<detail::node> ast_;
+	std::deque<std::unique_ptr<detail::node>> ast_stack_;
 
 	void start() noexcept
 	{
@@ -518,6 +535,7 @@ private:
 
 		parse_range();
 		while (is_logical_or(token_)) {
+			// TODO: handle AST
 			advance(); // logial-or
 			std::cout << "### logical-or\n";
 			parse_range();
@@ -533,6 +551,8 @@ private:
 			advance(); // partial
 			advance(); // dash
 			if (is_partial(token_)) {
+				// TODO: handle bounds
+				// TODO: handle AST
 				std::cout << "### hyphen ["<< sv <<"] - ["<<token_text()<<"]\n";
 				advance();
 				return;
@@ -541,23 +561,33 @@ private:
 			return;
 		}
 
+		// TODO: handle AST with implicit AND
+
 		while (!is_eof(token_)) {
 			if (is_caret(token_)) {
+				// TODO: handle bounds
+				// TODO: handle AST
 				std::cout << "### caret partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_tilde(token_)) {
+				// TODO: handle bounds
+				// TODO: handle AST
 				std::cout << "### tilde partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_op(token_)) {
+				// TODO: handle bounds
+				// TODO: handle AST
 				std::cout << "### op partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
+				// TODO: handle bounds
+				// TODO: handle AST
 				std::cout << "### partial ["<<token_text()<<"]\n";
 				advance();
 				continue;
