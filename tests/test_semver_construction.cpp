@@ -7,7 +7,7 @@ using semver::semver;
 
 class test_semver_construction : public ::testing::Test {};
 
-#define EXPECT_SV_EQ(s, e) EXPECT_EQ(std::string_view(s), (e))
+#define EXPECT_SV(s, e) EXPECT_EQ(std::string_view(s), (e))
 
 TEST_F(test_semver_construction, empty)
 {
@@ -24,8 +24,8 @@ TEST_F(test_semver_construction, plain_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, plain_2)
@@ -36,8 +36,8 @@ TEST_F(test_semver_construction, plain_2)
 	EXPECT_EQ(0u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, with_numeric_build)
@@ -48,8 +48,8 @@ TEST_F(test_semver_construction, with_numeric_build)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("123", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("123", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_build)
@@ -60,8 +60,8 @@ TEST_F(test_semver_construction, with_alphanumeric_build)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("abc123", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("abc123", v.build());
 }
 
 TEST_F(test_semver_construction, with_numeric_prerelease)
@@ -72,8 +72,8 @@ TEST_F(test_semver_construction, with_numeric_prerelease)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("123", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("123", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease)
@@ -84,8 +84,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("abc123", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("abc123", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, with_numeric_prerelease_numeric_build)
@@ -96,8 +96,8 @@ TEST_F(test_semver_construction, with_numeric_prerelease_numeric_build)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456", v.prerelease());
-	EXPECT_SV_EQ("123", v.build());
+	EXPECT_SV("456", v.prerelease());
+	EXPECT_SV("123", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_1)
@@ -108,8 +108,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456abc", v.prerelease());
-	EXPECT_SV_EQ("123", v.build());
+	EXPECT_SV("456abc", v.prerelease());
+	EXPECT_SV("123", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_2)
@@ -120,8 +120,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_numeric_build_2)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("abc456", v.prerelease());
-	EXPECT_SV_EQ("123", v.build());
+	EXPECT_SV("abc456", v.prerelease());
+	EXPECT_SV("123", v.build());
 }
 
 TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_1)
@@ -132,8 +132,8 @@ TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456", v.prerelease());
-	EXPECT_SV_EQ("abc123", v.build());
+	EXPECT_SV("456", v.prerelease());
+	EXPECT_SV("abc123", v.build());
 }
 
 TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_2)
@@ -144,8 +144,8 @@ TEST_F(test_semver_construction, with_numeric_prerelease_alphanumeric_build_2)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456", v.prerelease());
-	EXPECT_SV_EQ("123abc", v.build());
+	EXPECT_SV("456", v.prerelease());
+	EXPECT_SV("123abc", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_1)
@@ -156,8 +156,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("abc456", v.prerelease());
-	EXPECT_SV_EQ("abc123", v.build());
+	EXPECT_SV("abc456", v.prerelease());
+	EXPECT_SV("abc123", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_2)
@@ -168,8 +168,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456abc", v.prerelease());
-	EXPECT_SV_EQ("abc123", v.build());
+	EXPECT_SV("456abc", v.prerelease());
+	EXPECT_SV("abc123", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_3)
@@ -180,8 +180,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("abc456", v.prerelease());
-	EXPECT_SV_EQ("123abc", v.build());
+	EXPECT_SV("abc456", v.prerelease());
+	EXPECT_SV("123abc", v.build());
 }
 
 TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build_4)
@@ -192,8 +192,8 @@ TEST_F(test_semver_construction, with_alphanumeric_prerelease_alphanumeric_build
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("456abc", v.prerelease());
-	EXPECT_SV_EQ("123abc", v.build());
+	EXPECT_SV("456abc", v.prerelease());
+	EXPECT_SV("123abc", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_1)
@@ -204,8 +204,8 @@ TEST_F(test_semver_construction, example_from_semver_org_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("alpha", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("alpha", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_2)
@@ -216,8 +216,8 @@ TEST_F(test_semver_construction, example_from_semver_org_2)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("alpha.1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("alpha.1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_3)
@@ -228,8 +228,8 @@ TEST_F(test_semver_construction, example_from_semver_org_3)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("alpha.beta", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("alpha.beta", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_4)
@@ -240,8 +240,8 @@ TEST_F(test_semver_construction, example_from_semver_org_4)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("beta.2", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("beta.2", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_5)
@@ -252,8 +252,8 @@ TEST_F(test_semver_construction, example_from_semver_org_5)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("beta.11", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("beta.11", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_6)
@@ -264,8 +264,8 @@ TEST_F(test_semver_construction, example_from_semver_org_6)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("rc.1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("rc.1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_7)
@@ -276,8 +276,8 @@ TEST_F(test_semver_construction, example_from_semver_org_7)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("alpha", v.prerelease());
-	EXPECT_SV_EQ("001", v.build());
+	EXPECT_SV("alpha", v.prerelease());
+	EXPECT_SV("001", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_8)
@@ -288,8 +288,8 @@ TEST_F(test_semver_construction, example_from_semver_org_8)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("20130313144700", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("20130313144700", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_9)
@@ -300,8 +300,8 @@ TEST_F(test_semver_construction, example_from_semver_org_9)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("beta", v.prerelease());
-	EXPECT_SV_EQ("exp.sha.5114f85", v.build());
+	EXPECT_SV("beta", v.prerelease());
+	EXPECT_SV("exp.sha.5114f85", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_10)
@@ -312,8 +312,8 @@ TEST_F(test_semver_construction, example_from_semver_org_10)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("21AF26D3--117B344092BD", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("21AF26D3--117B344092BD", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_11)
@@ -324,8 +324,8 @@ TEST_F(test_semver_construction, example_from_semver_org_11)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("x.7.z.92", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("x.7.z.92", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_12)
@@ -336,8 +336,8 @@ TEST_F(test_semver_construction, example_from_semver_org_12)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("0.3.7", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("0.3.7", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, example_from_semver_org_13)
@@ -348,8 +348,8 @@ TEST_F(test_semver_construction, example_from_semver_org_13)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(0u, v.minor());
 	EXPECT_EQ(0u, v.patch());
-	EXPECT_SV_EQ("x-y-z.-", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("x-y-z.-", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction, failing_multiple_pluses)

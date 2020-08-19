@@ -69,10 +69,9 @@ namespace detail
 {
 class lexer final
 {
-private:
-	using char_type = std::string_view::value_type;
-
 public:
+	using string_type = std::string;
+
 	enum class token {
 		partial,
 		caret_partial,
@@ -107,9 +106,21 @@ public:
 		return "<unknown>";
 	}
 
-	lexer(std::string_view s)
+	struct parts {
+		string_type token = {};
+
+		string_type op = {};
+		string_type major = {};
+		string_type minor = {};
+		string_type patch = {};
+		string_type prerelease = {};
+		string_type build = {};
+	};
+
+	lexer(const std::string & s)
 		: last_(s.data() + s.size())
 		, cursor_(s.data())
+		, data_(s)
 	{
 	}
 
@@ -153,25 +164,31 @@ public:
 		return token::eof;
 	}
 
-	std::string_view text() noexcept
-	{
-		return token_;
-	}
+	const string_type & data() const noexcept { return data_; }
+
+	const parts & text() noexcept { return parts_; }
 
 private:
+	using char_type = string_type::value_type;
+
 	const char_type * last_ = nullptr;
 	const char_type * start_ = nullptr;
 	const char_type * cursor_ = nullptr;
 	const char_type * error_ = nullptr;
-	std::string_view token_ = {};
 
-	void clear() noexcept { token_ = {}; }
+	parts parts_;
 
-	void store()
+	std::string data_;
+
+	void clear() noexcept { parts_ = {}; }
+
+	void store() noexcept { store(parts_.token, start_); }
+
+	void store(string_type & s, const char_type * start) noexcept
 	{
-		assert(std::distance(start_, cursor_) >= 0);
-		token_ = std::string_view(
-			start_, static_cast<std::size_t>(std::distance(start_, cursor_)));
+		const auto d = std::distance(start, cursor_);
+		assert(d >= 0);
+		s = string_type(start, static_cast<std::size_t>(d));
 	}
 
 	void error() noexcept { error_ = cursor_; }
@@ -234,10 +251,13 @@ private:
 
 	token lex_op_partial() noexcept
 	{
+		const char_type * p = cursor_;
 		if (is_eq() || is_lt() || is_gt())
 			advance(1);
 		else
 			advance(2);
+		store(parts_.op, p);
+
 		scan_partial();
 		store();
 		return (!error_) ? token::op_partial : token::error;
@@ -250,34 +270,69 @@ private:
 		return (!error_) ? token::partial : token::error;
 	}
 
+	void scan_major() noexcept
+	{
+		const char_type * p = cursor_;
+		scan_partial_version();
+		store(parts_.major, p);
+	}
+
+	void scan_minor() noexcept
+	{
+		const char_type * p = cursor_;
+		scan_partial_version();
+		store(parts_.minor, p);
+	}
+
+	void scan_patch() noexcept
+	{
+		const char_type * p = cursor_;
+		scan_partial_version();
+		store(parts_.patch, p);
+	}
+
+	void scan_prerelease() noexcept
+	{
+		const char_type * p = cursor_;
+		scan_dot_separated_identifier();
+		store(parts_.prerelease, p);
+	}
+
+	void scan_build() noexcept
+	{
+		const char_type * p = cursor_;
+		scan_dot_separated_identifier();
+		store(parts_.build, p);
+	}
+
 	void scan_partial() noexcept
 	{
-		scan_partial_version();
+		scan_major();
 
 		if (!is_dot())
 			return;
 		advance(1);
 
-		scan_partial_version();
+		scan_minor();
 
 		if (!is_dot())
 			return;
 		advance(1);
 
-		scan_partial_version();
+		scan_patch();
 
 		if (is_dash()) {
 			advance(1);
-			scan_dot_separated_identifier(); // prerelease
+			scan_prerelease();
 			if (is_plus()) {
 				advance(1);
-				scan_dot_separated_identifier(); // build
+				scan_build();
 			}
 			return;
 		}
 		if (is_plus()) {
 			advance(1);
-			scan_dot_separated_identifier(); // build
+			scan_build();
 			return;
 		}
 	}
@@ -396,13 +451,13 @@ private:
 	}
 };
 
-inline semver lower_bound(std::string_view) noexcept
+inline semver lower_bound(const lexer::parts &) noexcept
 {
 	// TODO: implementation (handle wildcards)
 	return semver::min();
 }
 
-inline semver upper_bound(std::string_view) noexcept
+inline semver upper_bound(const lexer::parts &) noexcept
 {
 	// TODO: implementation (handle wildcards)
 	return semver::max();
@@ -434,8 +489,7 @@ public:
 	range & operator=(range &&) = default;
 
 	range(const std::string & s)
-		: data_(trim(s))
-		, lex_(std::string_view(s.data(), s.size()))
+		: lex_(trim(s))
 	{
 		parse_range_set();
 	}
@@ -483,14 +537,13 @@ private:
 	using lexer = detail::lexer;
 	using token = lexer::token;
 
-	std::string data_;
 	bool good_ = false;
 
 	detail::lexer lex_;
 	detail::lexer::token token_ = detail::lexer::token::eof;
 	detail::lexer::token next_ = detail::lexer::token::eof;
-	std::string_view token_text_;
-	std::string_view next_text_;
+	detail::lexer::parts token_text_ = {};
+	detail::lexer::parts next_text_ = {};
 
 	std::unique_ptr<detail::node> ast_;
 	std::deque<std::unique_ptr<detail::node>> ast_stack_;
@@ -511,7 +564,7 @@ private:
 		next_text_ = lex_.text();
 	}
 
-	std::string_view token_text() noexcept { return token_text_; }
+	lexer::string_type token_text() noexcept { return token_text_.token; }
 
 	void error() noexcept { good_ = false; }
 
@@ -547,13 +600,13 @@ private:
 	void parse_range() noexcept
 	{
 		if (is_partial(token_) && is_dash(next_)) {
-			auto sv = token_text();
+			auto s = token_text();
 			advance(); // partial
 			advance(); // dash
 			if (is_partial(token_)) {
 				// TODO: handle bounds
 				// TODO: handle AST
-				std::cout << "### hyphen ["<< sv <<"] - ["<<token_text()<<"]\n";
+				std::cout << "### hyphen ["<< s <<"] - ["<<token_text()<<"]\n";
 				advance();
 				return;
 			}

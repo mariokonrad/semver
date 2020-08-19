@@ -5,7 +5,7 @@ namespace {
 
 using semver::semver;
 
-#define EXPECT_SV_EQ(s, e) EXPECT_EQ(std::string_view(s), (e))
+#define EXPECT_SV(s, e) EXPECT_EQ(std::string_view(s), (e))
 
 class test_semver_construction_loose : public ::testing::Test {};
 
@@ -17,8 +17,8 @@ TEST_F(test_semver_construction_loose, conatining_spaces_in_front)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, conatining_spaces_in_between_1)
@@ -29,8 +29,8 @@ TEST_F(test_semver_construction_loose, conatining_spaces_in_between_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, conatining_spaces_in_between_2)
@@ -41,8 +41,8 @@ TEST_F(test_semver_construction_loose, conatining_spaces_in_between_2)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, conatining_spaces_in_between_3)
@@ -53,8 +53,8 @@ TEST_F(test_semver_construction_loose, conatining_spaces_in_between_3)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, conatining_spaces_at_end)
@@ -65,8 +65,8 @@ TEST_F(test_semver_construction_loose, conatining_spaces_at_end)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_between_1)
@@ -77,8 +77,8 @@ TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_betw
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("pre1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("pre1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_between_2)
@@ -89,8 +89,8 @@ TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_betw
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("pre1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("pre1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_between_3)
@@ -101,8 +101,8 @@ TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_betw
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("pre1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("pre1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_between_4)
@@ -113,8 +113,8 @@ TEST_F(test_semver_construction_loose, with_prerelease_conatining_spaces_in_betw
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("pre1", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("pre1", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_1)
@@ -125,8 +125,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_1)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_2)
@@ -137,8 +137,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_2)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_3)
@@ -149,8 +149,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_3)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_4)
@@ -161,8 +161,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_4)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_5)
@@ -173,8 +173,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_5)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 
 TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_6)
@@ -185,8 +185,8 @@ TEST_F(test_semver_construction_loose, construction_loose_with_prefixes_6)
 	EXPECT_EQ(1u, v.major());
 	EXPECT_EQ(2u, v.minor());
 	EXPECT_EQ(3u, v.patch());
-	EXPECT_SV_EQ("", v.prerelease());
-	EXPECT_SV_EQ("", v.build());
+	EXPECT_SV("", v.prerelease());
+	EXPECT_SV("", v.build());
 }
 }
 
