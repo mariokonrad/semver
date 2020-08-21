@@ -40,6 +40,78 @@ TEST_F(test_range_bounds, xrange_wildcard_position)
 	}
 }
 
+TEST_F(test_range_bounds, major_minor_patch)
+{
+	const lexer::parts p {"1.2.3", "", "1", "2", "3", "", ""};
+
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_minor)
+{
+	const lexer::parts p {"1.2", "", "1", "2", "", "", ""};
+
+	EXPECT_EQ(semver("1.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major)
+{
+	const lexer::parts p {"1", "", "1", "", "", "", ""};
+
+	EXPECT_EQ(semver("1.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_minor_patch_build)
+{
+	const lexer::parts p {"1.2.3+1", "", "1", "2", "3", "", "1"};
+
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_minor_build)
+{
+	const lexer::parts p {"1.2+1", "", "1", "2", "", "", "1"};
+
+	EXPECT_EQ(semver("1.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_build)
+{
+	const lexer::parts p {"1+1", "", "1", "", "", "", "1"};
+
+	EXPECT_EQ(semver("1.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_minor_patch_prerelease)
+{
+	const lexer::parts p {"1.2.3-1", "", "1", "2", "3", "1", ""};
+
+	EXPECT_EQ(semver("1.2.3-1"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.2.3-1"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_minor_prerelease)
+{
+	const lexer::parts p {"1.2-1", "", "1", "2", "", "1", ""};
+
+	EXPECT_EQ(semver("1.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, major_prerelease)
+{
+	const lexer::parts p {"1-1", "", "1", "", "", "1", ""};
+
+	EXPECT_EQ(semver("1.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
 TEST_F(test_range_bounds, xrange_major_only)
 {
 	const lexer::parts p {"1", "", "1", "", "", "", ""};
@@ -112,8 +184,140 @@ TEST_F(test_range_bounds, xrange_wildcard_on_major_and_minor_and_patch)
 	EXPECT_EQ(semver::max(), ::semver::detail::upper_bound(p)) << "token=" << p.token;
 }
 
-// TODO: tilde ranges
+TEST_F(test_range_bounds, tilderange_major_minor_patch_1)
+{
+	const lexer::parts p {"~1.2.3", "~", "1", "2", "3", "", ""};
 
-// TODO: caret ranges
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_minor_patch_2)
+{
+	const lexer::parts p {"~0.2.3", "~", "0", "2", "3", "", ""};
+
+	EXPECT_EQ(semver("0.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_minor_1)
+{
+	const lexer::parts p {"~1.2", "~", "1", "2", "", "", ""};
+
+	EXPECT_EQ(semver("1.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_minor_2)
+{
+	const lexer::parts p {"~0.2", "~", "0", "2", "", "", ""};
+
+	EXPECT_EQ(semver("0.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_1)
+{
+	const lexer::parts p {"~1", "~", "1", "", "", "", ""};
+
+	EXPECT_EQ(semver("1.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_2)
+{
+	const lexer::parts p {"~0", "~", "0", "", "", "", ""};
+
+	EXPECT_EQ(semver("0.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, tilderange_major_minor_patch_prerelease)
+{
+	const lexer::parts p {"~1.2.3-beta.2", "~", "1", "2", "3", "beta.2", ""};
+
+	EXPECT_EQ(semver("1.2.3-beta.2"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_patch)
+{
+	const lexer::parts p {"^1.2.3", "^", "1", "2", "3", "", ""};
+
+	EXPECT_EQ(semver("1.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_patch_with_xrange_1)
+{
+	const lexer::parts p {"^1.2.*", "^", "1", "2", "*", "", ""};
+
+	EXPECT_EQ(semver("1.2.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_patch_with_xrange_2)
+{
+	const lexer::parts p {"^0.0.*", "^", "0", "0", "*", "", ""};
+
+	EXPECT_EQ(semver("0.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.1.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_1)
+{
+	const lexer::parts p {"^0.0", "^", "0", "0", "", "", ""};
+
+	EXPECT_EQ(semver("0.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.1.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_with_xrange_1)
+{
+	const lexer::parts p {"^1.*", "^", "1", "*", "", "", ""};
+
+	EXPECT_EQ(semver("1.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_with_xrange_2)
+{
+	const lexer::parts p {"^0.*", "^", "0", "*", "", "", ""};
+
+	EXPECT_EQ(semver("0.0.0"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("1.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major0_minor_patch)
+{
+	const lexer::parts p {"^0.2.3", "^", "0", "2", "3", "", ""};
+
+	EXPECT_EQ(semver("0.2.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.3.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major0_minor0_patch)
+{
+	const lexer::parts p {"^0.0.3", "^", "0", "0", "3", "", ""};
+
+	EXPECT_EQ(semver("0.0.3"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.0.4-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_patch_prerelease_1)
+{
+	const lexer::parts p {"^1.2.3-beta.2", "^", "1", "2", "3", "beta.2", ""};
+
+	EXPECT_EQ(semver("1.2.3-beta.2"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("2.0.0-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
+
+TEST_F(test_range_bounds, caretrange_major_minor_patch_prerelease_2)
+{
+	const lexer::parts p {"^0.0.3-beta", "^", "0", "0", "3", "beta", ""};
+
+	EXPECT_EQ(semver("0.0.3-beta"), ::semver::detail::lower_bound(p)) << "token=" << p.token;
+	EXPECT_EQ(semver("0.0.4-0"), ::semver::detail::upper_bound(p)) << "token=" << p.token;
+}
 }
 

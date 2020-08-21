@@ -242,7 +242,7 @@ private:
 
 	token lex_caret_partial() noexcept
 	{
-		advance(1); // caret
+		scan_op();
 		scan_partial();
 		store();
 		return (!error_) ? token::caret_partial : token::error;
@@ -250,7 +250,7 @@ private:
 
 	token lex_tilde_partial() noexcept
 	{
-		advance(1); // tilde
+		scan_op();
 		scan_partial();
 		store();
 		return (!error_) ? token::tilde_partial : token::error;
@@ -258,13 +258,7 @@ private:
 
 	token lex_op_partial() noexcept
 	{
-		const char_type * p = cursor_;
-		if (is_eq() || is_lt() || is_gt())
-			advance(1);
-		else
-			advance(2);
-		store(parts_.op, p);
-
+		scan_op();
 		scan_partial();
 		store();
 		return (!error_) ? token::op_partial : token::error;
@@ -275,6 +269,16 @@ private:
 		scan_partial();
 		store();
 		return (!error_) ? token::partial : token::error;
+	}
+
+	void scan_op() noexcept
+	{
+		const char_type * p = cursor_;
+		if (is_eq() || is_lt() || is_gt() || is_tilde() || is_caret())
+			advance(1);
+		else
+			advance(2);
+		store(parts_.op, p);
 	}
 
 	void scan_major() noexcept
@@ -401,7 +405,8 @@ inline semver lower_bound(const lexer::parts & p) noexcept
 	if (p.patch.empty() || p.patch == "*")
 		return semver(p.major + "." + p.minor + ".0");
 
-	return semver(p.token);
+	return semver(p.token.substr(
+		p.op.size(), p.token.size() - p.op.size() - p.build.size())); // cut op and build
 }
 
 inline semver upper_bound(const lexer::parts & p) noexcept
@@ -411,13 +416,24 @@ inline semver upper_bound(const lexer::parts & p) noexcept
 	if (p.major.empty() || p.major == "*")
 		return semver::max();
 
+	if (p.op == "^" && p.major != "0")
+		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+
 	if (p.minor.empty() || p.minor == "*")
 		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
 
-	if (p.patch.empty() || p.patch == "*")
+	if (p.op == "^" && p.minor != "0")
 		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
 
-	return semver(p.token);
+	if (p.patch.empty() || p.patch == "*" || p.op == "~")
+		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+
+	if (p.op == "^" && p.patch != "0")
+		return semver(
+			p.major + "." + p.minor + "." + std::to_string(std::stoul(p.patch) + 1u) + "-0");
+
+	return semver(p.token.substr(
+		p.op.size(), p.token.size() - p.op.size() - p.build.size())); // cut op and build
 }
 
 class node final

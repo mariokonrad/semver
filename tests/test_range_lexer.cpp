@@ -105,7 +105,7 @@ TEST_F(test_range_lexer, caret_partial)
 	lexer l("^1.2.3");
 
 	EXPECT_EQ(lexer::token::caret_partial, l.scan());
-	EXPECT_SV("", l.text().op);
+	EXPECT_SV("^", l.text().op);
 	EXPECT_SV("1", l.text().major);
 	EXPECT_SV("2", l.text().minor);
 	EXPECT_SV("3", l.text().patch);
@@ -119,7 +119,7 @@ TEST_F(test_range_lexer, tilde_partial)
 	lexer l("~1.2.3");
 
 	EXPECT_EQ(lexer::token::tilde_partial, l.scan());
-	EXPECT_SV("", l.text().op);
+	EXPECT_SV("~", l.text().op);
 	EXPECT_SV("1", l.text().major);
 	EXPECT_SV("2", l.text().minor);
 	EXPECT_SV("3", l.text().patch);

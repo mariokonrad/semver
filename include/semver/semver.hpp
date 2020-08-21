@@ -5,6 +5,7 @@
 #include <charconv>
 #include <functional>
 #include <limits>
+#include <ostream>
 #include <string>
 #include <string_view>
 
@@ -278,6 +279,11 @@ private:
 inline std::string to_string(const semver & v)
 {
 	return v.str();
+}
+
+inline std::ostream & operator<<(std::ostream & os, const semver & v)
+{
+	return os << to_string(v);
 }
 
 inline bool operator==(const semver & v1, const semver & v2) noexcept
