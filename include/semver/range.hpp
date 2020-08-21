@@ -83,29 +83,6 @@ public:
 		eof
 	};
 
-	static const char * name(token t) noexcept
-	{
-		switch (t) {
-			case token::partial:
-				return "partial";
-			case token::caret_partial:
-				return "caret_partial";
-			case token::tilde_partial:
-				return "tilde_partial";
-			case token::op_partial:
-				return "op_partial";
-			case token::dash:
-				return "dash";
-			case token::logical_or:
-				return "logical_or";
-			case token::error:
-				return "error";
-			case token::eof:
-				return "eof";
-		}
-		return "<unknown>";
-	}
-
 	struct parts {
 		string_type token = {}; // full token
 
@@ -506,36 +483,6 @@ public:
 		return false;
 	}
 
-	static void dump_r(std::ostream & os, const node & n, int indent) // TODO: temporary
-	{
-		switch (n.type_) {
-			case node_type::op_and: os << "&&"; break;
-			case node_type::op_or: os << "||"; break;
-			case node_type::op_eq: os << "=="; break;
-			case node_type::op_lt: os << "< "; break;
-			case node_type::op_le: os << "<="; break;
-			case node_type::op_gt: os << "> "; break;
-			case node_type::op_ge: os << ">="; break;
-		}
-
-		if (n.version_) {
-			os << *n.version_;
-		} else {
-			os << '\n';
-			os << std::string(indent * 4, ' ') << "  l: ";
-			dump_r(os, *n.left_, indent + 1);
-			os << std::string(indent * 4, ' ') << "  r: ";
-			dump_r(os, *n.right_, indent + 1);
-		}
-
-		os << '\n';
-	}
-
-	void dump(std::ostream & os) const // TODO: temporary
-	{
-		dump_r(os, *this, 0);
-	}
-
 private:
 	node_type type_;
 	std::unique_ptr<node> left_;
@@ -554,7 +501,48 @@ private:
 		, right_(std::move(right))
 	{
 	}
+
+	friend void dump(std::ostream &, const node &, int);
 };
+
+inline void dump(std::ostream & os, const node & n, int indent) // TODO: temporary
+{
+	switch (n.type_) {
+		case node::node_type::op_and:
+			os << "&&";
+			break;
+		case node::node_type::op_or:
+			os << "||";
+			break;
+		case node::node_type::op_eq:
+			os << "==";
+			break;
+		case node::node_type::op_lt:
+			os << "< ";
+			break;
+		case node::node_type::op_le:
+			os << "<=";
+			break;
+		case node::node_type::op_gt:
+			os << "> ";
+			break;
+		case node::node_type::op_ge:
+			os << ">=";
+			break;
+	}
+
+	if (n.version_) {
+		os << *n.version_;
+	} else {
+		os << '\n';
+		os << std::string(indent * 4, ' ') << "  l: ";
+		dump(os, *n.left_, indent + 1);
+		os << std::string(indent * 4, ' ') << "  r: ";
+		dump(os, *n.right_, indent + 1);
+	}
+
+	os << '\n';
+}
 }
 
 static std::string trim(std::string s)
@@ -690,19 +678,6 @@ private:
 	bool is_partial(token t) const noexcept { return t == token::partial; }
 	bool is_dash(token t) const noexcept { return t == token::dash; }
 
-	struct indent { // TODO: temporary
-		int n = 0;
-
-		friend std::ostream & operator<<(std::ostream & os, const indent & i)
-		{
-			return os << std::string(i.n * 4, ' ');
-		}
-
-		indent & operator++() { ++n; return *this; }
-		indent & operator--() { --n; return *this; }
-
-	} indent_;
-
 	void parse_range_set() noexcept
 	{
 		start();
@@ -721,9 +696,6 @@ private:
 			auto r = std::move(ast_.back()); ast_.pop_back();
 			auto l = std::move(ast_.back()); ast_.pop_back();
 			ast_.push_back(std::make_unique<node>(node::create_or(std::move(l), std::move(r))));
-
-			dump_stack();
-			std::cout << indent_ << "### logical-or (" << ast_.size() << ")\n";
 		}
 
 		// there might be an implicit `and` left here
@@ -732,9 +704,6 @@ private:
 			auto r = std::move(ast_.back()); ast_.pop_back();
 			auto l = std::move(ast_.back()); ast_.pop_back();
 			ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
-
-			dump_stack();
-			std::cout << indent_ << "### implicit-and (" << ast_.size() << ")\n";
 		}
 
 		good_ = !is_error(token_);
@@ -751,9 +720,6 @@ private:
 					std::make_unique<node>(node::create_ge(lower_bound(first))),
 					std::make_unique<node>(node::create_le(lower_bound(token_text_)))
 					)));
-				dump_stack();
-				std::cout << indent_ << "### hyphen ["<< first.token <<"] - ["<<token_text_.token<<"] ast("<<ast_.size()<<")\n";
-
 				advance();
 				return;
 			}
@@ -768,9 +734,6 @@ private:
 				auto r = std::move(ast_.back()); ast_.pop_back();
 				auto l = std::move(ast_.back()); ast_.pop_back();
 				ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
-
-				dump_stack();
-				std::cout << indent_ << "### implicit-and (" << ast_.size() << ")\n";
 			}
 
 			if (is_caret(token_) || is_tilde(token_)) {
@@ -783,9 +746,6 @@ private:
 						std::make_unique<node>(node::create_ge(l)),
 						std::make_unique<node>(node::create_lt(u)))));
 				}
-				dump_stack();
-				std::cout << indent_ << "### caret/tilde partial ["<<token_text_.token<<"]\n";
-
 				advance();
 				continue;
 			}
@@ -801,17 +761,11 @@ private:
 					ast_.push_back(std::make_unique<node>(node::create_ge(semver(token_text_.version))));
 				if (token_text_.op == "=")
 					ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
-				dump_stack();
-				std::cout << indent_ << "### op partial ["<<token_text_.token<<"]\n";
-
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
 				ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
-				dump_stack();
-				std::cout << indent_ << "### partial ["<<token_text_.token<<"]\n";
-
 				advance();
 				continue;
 			}
@@ -819,12 +773,6 @@ private:
 			error();
 			return;
 		}
-	}
-
-	void dump_stack() const // TODO: temporary
-	{
-		for (const auto & e : ast_)
-			e->dump(std::cout);
 	}
 };
 
