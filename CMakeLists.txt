@@ -36,10 +36,14 @@ target_include_directories(${PROJECT_NAME}
 	)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 
-### example
+### examples
 add_executable(semver-compare)
 target_sources(semver-compare PRIVATE example/semver-compare.cpp)
 target_link_libraries(semver-compare PRIVATE semver)
+
+add_executable(range-parse)
+target_sources(range-parse PRIVATE example/range-parse.cpp)
+target_link_libraries(range-parse PRIVATE semver)
 
 ### testing
 enable_testing()
