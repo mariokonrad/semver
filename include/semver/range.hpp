@@ -486,7 +486,12 @@ public:
 	{
 		transform_leafs_to_left(*this);
 		transform_sort_leafs(*this);
+
 		// TODO: transform leafs of `or` nodes
+		// algorithm idea:
+		//
+		//  traverse tree in-order and do selection sort within the tree on `or` nodes, leave `and` nodes alone
+		//
 	}
 
 	bool is_leaf() const noexcept { return !left_ && !right_; }
