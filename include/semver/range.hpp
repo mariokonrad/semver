@@ -118,10 +118,10 @@ public:
 	};
 
 	lexer(const std::string & s)
-		: last_(s.data() + s.size())
-		, cursor_(s.data())
-		, data_(s)
+		: data_(s)
 	{
+		cursor_ = data_.data();
+		last_ = data_.data() + data_.size();
 	}
 
 	token scan() noexcept
@@ -171,14 +171,21 @@ public:
 private:
 	using char_type = string_type::value_type;
 
+	const char_type * cursor_ = nullptr;
 	const char_type * last_ = nullptr;
 	const char_type * start_ = nullptr;
-	const char_type * cursor_ = nullptr;
 	const char_type * error_ = nullptr;
 
 	parts parts_;
-
 	std::string data_;
+
+	void patch(char c) noexcept
+	{
+		assert(cursor_ >= data_.data());
+		assert(cursor_ < data_.data() + data_.size());
+		char_type * p = const_cast<char_type *>(cursor_); // we know what we are doing
+		*p = c;
+	}
 
 	void clear() noexcept { parts_ = {}; }
 
@@ -359,6 +366,7 @@ private:
 	void scan_partial_version() noexcept
 	{
 		if (is_x()) {
+			patch('*'); // normalize wildcards to '*'
 			advance(1);
 			return;
 		}
@@ -379,6 +387,38 @@ private:
 		error();
 	}
 };
+
+inline semver lower_bound(const lexer::parts & p) noexcept
+{
+	// TODO: to be optimized, re-parse semver? meh...
+
+	if (p.major.empty() || p.major == "*")
+		return semver::min();
+
+	if (p.minor.empty() || p.minor == "*")
+		return semver(p.major + ".0.0");
+
+	if (p.patch.empty() || p.patch == "*")
+		return semver(p.major + "." + p.minor + ".0");
+
+	return semver(p.token);
+}
+
+inline semver upper_bound(const lexer::parts & p) noexcept
+{
+	// TODO: to be optimized, re-parse semver? meh...
+
+	if (p.major.empty() || p.major == "*")
+		return semver::max();
+
+	if (p.minor.empty() || p.minor == "*")
+		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+
+	if (p.patch.empty() || p.patch == "*")
+		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+
+	return semver(p.token);
+}
 
 class node final
 {
@@ -450,18 +490,6 @@ private:
 	{
 	}
 };
-
-inline semver lower_bound(const lexer::parts &) noexcept
-{
-	// TODO: implementation (handle wildcards)
-	return semver::min();
-}
-
-inline semver upper_bound(const lexer::parts &) noexcept
-{
-	// TODO: implementation (handle wildcards)
-	return semver::max();
-}
 }
 
 static std::string trim(std::string s)
