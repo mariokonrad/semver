@@ -422,10 +422,9 @@ inline semver upper_bound(const lexer::parts & p)
 
 class node final
 {
-private:
-	enum class node_type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
-
 public:
+	enum class type { op_and, op_or, op_eq, op_lt, op_le, op_gt, op_ge };
+
 	~node() = default;
 
 	node(const node &) = delete;
@@ -436,24 +435,24 @@ public:
 
 	static node create_and(std::unique_ptr<node> left, std::unique_ptr<node> right)
 	{
-		return node(node_type::op_and, std::move(left), std::move(right));
+		return node(type::op_and, std::move(left), std::move(right));
 	}
 
 	static node create_or(std::unique_ptr<node> left, std::unique_ptr<node> right)
 	{
-		return node(node_type::op_or, std::move(left), std::move(right));
+		return node(type::op_or, std::move(left), std::move(right));
 	}
 
-	static node create_eq(const semver & s) { return {node_type::op_eq, s}; }
-	static node create_lt(const semver & s) { return {node_type::op_lt, s}; }
-	static node create_le(const semver & s) { return {node_type::op_le, s}; }
-	static node create_gt(const semver & s) { return {node_type::op_gt, s}; }
-	static node create_ge(const semver & s) { return {node_type::op_ge, s}; }
+	static node create_eq(const semver & s) { return {type::op_eq, s}; }
+	static node create_lt(const semver & s) { return {type::op_lt, s}; }
+	static node create_le(const semver & s) { return {type::op_le, s}; }
+	static node create_gt(const semver & s) { return {type::op_gt, s}; }
+	static node create_ge(const semver & s) { return {type::op_ge, s}; }
 
 	bool eval(const semver & v) const noexcept
 	{
 		switch (type_) {
-			case node_type::op_and:
+			case type::op_and:
 				// shortcut behavior
 				if (!left_->eval(v))
 					return false;
@@ -461,7 +460,7 @@ public:
 					return false;
 				return true;
 
-			case node_type::op_or:
+			case type::op_or:
 				// shortcut behavior
 				if (left_->eval(v))
 					return true;
@@ -469,15 +468,15 @@ public:
 					return true;
 				return false;
 
-			case node_type::op_eq:
+			case type::op_eq:
 				return v == *version_;
-			case node_type::op_lt:
+			case type::op_lt:
 				return v < *version_;
-			case node_type::op_le:
+			case type::op_le:
 				return v <= *version_;
-			case node_type::op_gt:
+			case type::op_gt:
 				return v > *version_;
-			case node_type::op_ge:
+			case type::op_ge:
 				return v >= *version_;
 		}
 		return false;
@@ -485,31 +484,44 @@ public:
 
 	void optimize()
 	{
-		optimize_r(*this);
+		transform_leafs_to_left(*this);
+		transform_sort_leafs(*this);
+		// TODO: transform leafs of `or` nodes
+	}
+
+	bool is_leaf() const noexcept { return !left_ && !right_; }
+	type get_type() const { return type_; }
+	std::optional<semver> get_version() const { return version_; }
+
+	template <typename Visitor> void visit_postfix(Visitor v) const
+	{
+		if (left_)
+			left_->visit_postfix(v);
+		if (right_)
+			right_->visit_postfix(v);
+		v(*this);
 	}
 
 private:
-	node_type type_;
+	type type_;
 	std::unique_ptr<node> left_;
 	std::unique_ptr<node> right_;
 	std::optional<semver> version_;
 
-	node(node_type t, const semver & s)
+	node(type t, const semver & s)
 		: type_(t)
 		, version_(s)
 	{
 	}
 
-	node(node_type t, std::unique_ptr<node> left, std::unique_ptr<node> right)
+	node(type t, std::unique_ptr<node> left, std::unique_ptr<node> right)
 		: type_(t)
 		, left_(std::move(left))
 		, right_(std::move(right))
 	{
 	}
 
-	bool is_leaf() const noexcept { return !left_ && !right_; }
-
-	static void optimize_r(node & n) noexcept
+	static void transform_leafs_to_left(node & n) noexcept
 	{
 		// prequisite: the node is either a leaf or has both subtrees.
 		//             this is guaranteed by the factory member functions.
@@ -517,18 +529,35 @@ private:
 		if (n.is_leaf())
 			return;
 
-		const bool right_is_leaf = n.right_->is_leaf();
-		if (n.left_->is_leaf() && right_is_leaf)
+		if (n.left_->is_leaf() && n.right_->is_leaf())
 			return;
 
 		// swap leaf to the right
-		if (right_is_leaf) {
+		if (n.right_->is_leaf()) {
 			using std::swap;
 			swap(n.left_, n.right_);
 		}
 
-		optimize_r(*n.left_);
-		optimize_r(*n.right_);
+		transform_leafs_to_left(*n.left_);
+		transform_leafs_to_left(*n.right_);
+	}
+
+	static void transform_sort_leafs(node & n) noexcept
+	{
+		if (n.is_leaf())
+			return;
+
+		// having two leafs, make sure the smaller one is on the left
+		if (n.left_->is_leaf() && n.right_->is_leaf()) {
+			if (*n.left_->get_version() > *n.right_->get_version()) {
+				using std::swap;
+				swap(n.left_, n.right_);
+			}
+			return;
+		}
+
+		transform_sort_leafs(*n.left_);
+		transform_sort_leafs(*n.right_);
 	}
 
 	friend void dump(std::ostream &, const node &, int);
@@ -537,25 +566,25 @@ private:
 inline void dump(std::ostream & os, const node & n, int indent) // TODO: temporary
 {
 	switch (n.type_) {
-		case node::node_type::op_and:
+		case node::type::op_and:
 			os << "&&";
 			break;
-		case node::node_type::op_or:
+		case node::type::op_or:
 			os << "||";
 			break;
-		case node::node_type::op_eq:
+		case node::type::op_eq:
 			os << "==";
 			break;
-		case node::node_type::op_lt:
+		case node::type::op_lt:
 			os << "< ";
 			break;
-		case node::node_type::op_le:
+		case node::type::op_le:
 			os << "<=";
 			break;
-		case node::node_type::op_gt:
+		case node::type::op_gt:
 			os << "> ";
 			break;
-		case node::node_type::op_ge:
+		case node::type::op_ge:
 			os << ">=";
 			break;
 	}
