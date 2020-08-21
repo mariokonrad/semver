@@ -32,6 +32,8 @@ public:
 	semver(semver &&) = default;
 	semver & operator=(semver &&) = default;
 
+	semver() = default;
+
 	semver(const std::string & s, bool loose = false)
 		: data_(s)
 	{
@@ -60,6 +62,9 @@ public:
 
 	std::string str() const
 	{
+		if (!ok())
+			return "<invalid>";
+
 		auto s = std::to_string(major()) + '.' + std::to_string(minor()) + '.'
 			+ std::to_string(patch());
 		const auto pr = prerelease();
@@ -102,8 +107,6 @@ private:
 
 	std::string data_;
 	bool good_ = false;
-
-	semver() {}
 
 	semver(number_type major, number_type minor, number_type patch)
 		: major_(major)

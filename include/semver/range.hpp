@@ -596,21 +596,22 @@ public:
 			return false;
 
 		if (ast_.size() != 1u)
-			dump_stack();
+			dump_stack(); // TODO: temporary
+
 		assert(ast_.size() == 1u);
 		return ast_.back()->eval(v);
 	}
 
-	semver max_satisfying(const std::vector<semver> &) const noexcept
+	semver max_satisfying(const std::vector<semver> & versions) const noexcept
 	{
-		// TODO: implementation
-		return {""};
+		// TODO: benchmark what is better: linear search or sort before
+		return satisfies_if(begin(versions), end(versions), std::greater<>{});
 	}
 
-	semver min_satisfying(const std::vector<semver> &) const noexcept
+	semver min_satisfying(const std::vector<semver> & versions) const noexcept
 	{
-		// TODO: implementation
-		return {""};
+		// TODO: benchmark what is better: linear search or sort before
+		return satisfies_if(begin(versions), end(versions), std::less<>{});
 	}
 
 	// TODO: really keep this function? It's basically just noise.
@@ -630,6 +631,27 @@ private:
 
 	using node = detail::node;
 	std::deque<std::unique_ptr<node>> ast_;
+
+	template <typename Iterator, typename Predicate>
+	typename Iterator::value_type satisfies_if(
+		Iterator first, Iterator last, Predicate pred) const noexcept
+	{
+		if (first == last)
+			return {};
+		bool never_checked = true;
+		typename Iterator::value_type result = {};
+		for (; first != last; ++first) {
+			if (satisfies(*first)) {
+				if (never_checked) {
+					never_checked = false;
+					result = *first;
+				} else if (pred(*first, result)) {
+					result = *first;
+				}
+			}
+		}
+		return result;
+	}
 
 	void start() noexcept
 	{

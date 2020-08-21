@@ -45,6 +45,10 @@ add_executable(range-parse)
 target_sources(range-parse PRIVATE example/range-parse.cpp)
 target_link_libraries(range-parse PRIVATE semver)
 
+add_executable(range-check)
+target_sources(range-check PRIVATE example/range-check.cpp)
+target_link_libraries(range-check PRIVATE semver)
+
 ### testing
 enable_testing()
 add_executable(testrunner)

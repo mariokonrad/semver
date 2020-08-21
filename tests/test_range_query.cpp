@@ -234,6 +234,24 @@ TEST_F(test_range_query, max_satisfying)
 		r.max_satisfying({semver("1.2.0"), semver("3.0.0"), semver("1.11.0")}));
 }
 
+TEST_F(test_range_query, max_satisfying_none_satisfying)
+{
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
+
+	const auto v = r.max_satisfying({semver("1.2.0"), semver("2.2.0"), semver("2.11.0")});
+	EXPECT_FALSE(v.ok());
+	EXPECT_EQ(semver(), v);
+}
+
+TEST_F(test_range_query, max_satisfying_empty_list)
+{
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
+
+	const auto v = r.max_satisfying({});
+	EXPECT_FALSE(v.ok());
+	EXPECT_EQ(semver(), v);
+}
+
 TEST_F(test_range_query, min_satisfying)
 {
 	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
@@ -242,6 +260,24 @@ TEST_F(test_range_query, min_satisfying)
 		r.min_satisfying({semver("1.2.0"), semver("1.5.0"), semver("1.11.0")}));
 	EXPECT_EQ(semver("1.11.0"),
 		r.min_satisfying({semver("1.2.0"), semver("3.0.0"), semver("1.11.0")}));
+}
+
+TEST_F(test_range_query, min_satisfying_none_satisfying)
+{
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
+
+	const auto v = r.min_satisfying({semver("1.2.0"), semver("2.5.0"), semver("2.11.0")});
+	EXPECT_FALSE(v.ok());
+	EXPECT_EQ(semver(), v);
+}
+
+TEST_F(test_range_query, min_satisfying_empty_list)
+{
+	const auto r = range(">1.2.3 <2.0.0 || 3.0.0");
+
+	const auto v = r.min_satisfying({});
+	EXPECT_FALSE(v.ok());
+	EXPECT_EQ(semver(), v);
 }
 }
 
