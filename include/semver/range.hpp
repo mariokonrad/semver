@@ -107,8 +107,11 @@ public:
 	}
 
 	struct parts {
-		string_type token = {};
+		string_type token = {}; // full token
 
+		string_type version = {}; // version without op/tilde/caret
+
+		// indivisual parts
 		string_type op = {};
 		string_type major = {};
 		string_type minor = {};
@@ -189,9 +192,13 @@ private:
 
 	void clear() noexcept { parts_ = {}; }
 
-	void store() noexcept { store(parts_.token, start_); }
+	void store()
+	{
+		store(parts_.token, start_);
+		store(parts_.version, start_ + parts_.op.size());
+	}
 
-	void store(string_type & s, const char_type * start) noexcept
+	void store(string_type & s, const char_type * start)
 	{
 		const auto d = std::distance(start, cursor_);
 		assert(d >= 0);
@@ -240,7 +247,7 @@ private:
 	bool is_op() const noexcept { return is_lt() || is_le() || is_gt() || is_ge() || is_eq(); }
 	bool is_logical_or() const noexcept { return (*cursor_ == '|') && (peek() == '|'); }
 
-	token lex_caret_partial() noexcept
+	token lex_caret_partial()
 	{
 		scan_op();
 		scan_partial();
@@ -248,7 +255,7 @@ private:
 		return (!error_) ? token::caret_partial : token::error;
 	}
 
-	token lex_tilde_partial() noexcept
+	token lex_tilde_partial()
 	{
 		scan_op();
 		scan_partial();
@@ -256,7 +263,7 @@ private:
 		return (!error_) ? token::tilde_partial : token::error;
 	}
 
-	token lex_op_partial() noexcept
+	token lex_op_partial()
 	{
 		scan_op();
 		scan_partial();
@@ -264,14 +271,14 @@ private:
 		return (!error_) ? token::op_partial : token::error;
 	}
 
-	token lex_partial() noexcept
+	token lex_partial()
 	{
 		scan_partial();
 		store();
 		return (!error_) ? token::partial : token::error;
 	}
 
-	void scan_op() noexcept
+	void scan_op()
 	{
 		const char_type * p = cursor_;
 		if (is_eq() || is_lt() || is_gt() || is_tilde() || is_caret())
@@ -281,42 +288,42 @@ private:
 		store(parts_.op, p);
 	}
 
-	void scan_major() noexcept
+	void scan_major()
 	{
 		const char_type * p = cursor_;
 		scan_partial_version();
 		store(parts_.major, p);
 	}
 
-	void scan_minor() noexcept
+	void scan_minor()
 	{
 		const char_type * p = cursor_;
 		scan_partial_version();
 		store(parts_.minor, p);
 	}
 
-	void scan_patch() noexcept
+	void scan_patch()
 	{
 		const char_type * p = cursor_;
 		scan_partial_version();
 		store(parts_.patch, p);
 	}
 
-	void scan_prerelease() noexcept
+	void scan_prerelease()
 	{
 		const char_type * p = cursor_;
 		scan_dot_separated_identifier();
 		store(parts_.prerelease, p);
 	}
 
-	void scan_build() noexcept
+	void scan_build()
 	{
 		const char_type * p = cursor_;
 		scan_dot_separated_identifier();
 		store(parts_.build, p);
 	}
 
-	void scan_partial() noexcept
+	void scan_partial()
 	{
 		scan_major();
 
@@ -392,7 +399,7 @@ private:
 	}
 };
 
-inline semver lower_bound(const lexer::parts & p) noexcept
+inline semver lower_bound(const lexer::parts & p)
 {
 	// TODO: to be optimized, re-parse semver? meh...
 
@@ -409,7 +416,7 @@ inline semver lower_bound(const lexer::parts & p) noexcept
 		p.op.size(), p.token.size() - p.op.size() - p.build.size())); // cut op and build
 }
 
-inline semver upper_bound(const lexer::parts & p) noexcept
+inline semver upper_bound(const lexer::parts & p)
 {
 	// TODO: to be optimized, re-parse semver? meh...
 
@@ -487,6 +494,36 @@ public:
 		return false;
 	}
 
+	static void dump_r(std::ostream & os, const node & n, int indent) // TODO: temporary
+	{
+		switch (n.type_) {
+			case node_type::op_and: os << "&&"; break;
+			case node_type::op_or: os << "||"; break;
+			case node_type::op_eq: os << "=="; break;
+			case node_type::op_lt: os << "< "; break;
+			case node_type::op_le: os << "<="; break;
+			case node_type::op_gt: os << "> "; break;
+			case node_type::op_ge: os << ">="; break;
+		}
+
+		if (n.version_) {
+			os << *n.version_;
+		} else {
+			os << '\n';
+			os << std::string(indent * 4, ' ') << "  l: ";
+			dump_r(os, *n.left_, indent + 1);
+			os << std::string(indent * 4, ' ') << "  r: ";
+			dump_r(os, *n.right_, indent + 1);
+		}
+
+		os << '\n';
+	}
+
+	void dump(std::ostream & os) const // TODO: temporary
+	{
+		dump_r(os, *this, 0);
+	}
+
 private:
 	node_type type_;
 	std::unique_ptr<node> left_;
@@ -553,10 +590,15 @@ public:
 		return {""};
 	}
 
-	bool satisfies(const semver &) const noexcept
+	bool satisfies(const semver & v) const noexcept
 	{
-		// TODO: implementation
-		return false;
+		if (ast_.empty())
+			return false;
+
+		if (ast_.size() != 1u)
+			dump_stack();
+		assert(ast_.size() == 1u);
+		return ast_.back()->eval(v);
 	}
 
 	semver max_satisfying(const std::vector<semver> &) const noexcept
@@ -571,11 +613,8 @@ public:
 		return {""};
 	}
 
-	bool outside(const semver &) const noexcept
-	{
-		// TODO: implementation
-		return false;
-	}
+	// TODO: really keep this function? It's basically just noise.
+	bool outside(const semver & v) const noexcept { return !satisfies(v); }
 
 private:
 	using lexer = detail::lexer;
@@ -589,8 +628,8 @@ private:
 	detail::lexer::parts token_text_ = {};
 	detail::lexer::parts next_text_ = {};
 
-	std::unique_ptr<detail::node> ast_;
-	std::deque<std::unique_ptr<detail::node>> ast_stack_;
+	using node = detail::node;
+	std::deque<std::unique_ptr<node>> ast_;
 
 	void start() noexcept
 	{
@@ -608,8 +647,6 @@ private:
 		next_text_ = lex_.text();
 	}
 
-	lexer::string_type token_text() noexcept { return token_text_.token; }
-
 	void error() noexcept { good_ = false; }
 
 	bool is_eof(token t) const noexcept { return t == token::eof; }
@@ -620,6 +657,19 @@ private:
 	bool is_logical_or(token t) const noexcept { return t == token::logical_or; }
 	bool is_partial(token t) const noexcept { return t == token::partial; }
 	bool is_dash(token t) const noexcept { return t == token::dash; }
+
+	struct indent {
+		int n = 0;
+
+		friend std::ostream & operator<<(std::ostream & os, const indent & i)
+		{
+			return os << std::string(i.n * 4, ' ');
+		}
+
+		indent & operator++() { ++n; return *this; }
+		indent & operator--() { --n; return *this; }
+
+	} indent_;
 
 	void parse_range_set() noexcept
 	{
@@ -632,10 +682,27 @@ private:
 
 		parse_range();
 		while (is_logical_or(token_)) {
-			// TODO: handle AST
 			advance(); // logial-or
-			std::cout << "### logical-or\n";
 			parse_range();
+
+			assert(ast_.size() > 1);
+			auto r = std::move(ast_.back()); ast_.pop_back();
+			auto l = std::move(ast_.back()); ast_.pop_back();
+			ast_.push_back(std::make_unique<node>(node::create_or(std::move(l), std::move(r))));
+
+			dump_stack();
+			std::cout << indent_ << "### logical-or (" << ast_.size() << ")\n";
+		}
+
+		// there might be an implicit `and` left here
+		if (ast_.size() > 1) {
+			assert(ast_.size() == 2u);
+			auto r = std::move(ast_.back()); ast_.pop_back();
+			auto l = std::move(ast_.back()); ast_.pop_back();
+			ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
+
+			dump_stack();
+			std::cout << indent_ << "### implicit-and (" << ast_.size() << ")\n";
 		}
 
 		good_ = !is_error(token_);
@@ -644,13 +711,17 @@ private:
 	void parse_range() noexcept
 	{
 		if (is_partial(token_) && is_dash(next_)) {
-			auto s = token_text();
+			const auto first = token_text_;
 			advance(); // partial
 			advance(); // dash
 			if (is_partial(token_)) {
-				// TODO: handle bounds
-				// TODO: handle AST
-				std::cout << "### hyphen ["<< s <<"] - ["<<token_text()<<"]\n";
+				ast_.push_back(std::make_unique<node>(node::create_and(
+					std::make_unique<node>(node::create_ge(lower_bound(first))),
+					std::make_unique<node>(node::create_le(lower_bound(token_text_)))
+					)));
+				dump_stack();
+				std::cout << indent_ << "### hyphen ["<< first.token <<"] - ["<<token_text_.token<<"] ast("<<ast_.size()<<")\n";
+
 				advance();
 				return;
 			}
@@ -658,34 +729,57 @@ private:
 			return;
 		}
 
-		// TODO: handle AST with implicit AND
-
 		while (!is_eof(token_)) {
-			if (is_caret(token_)) {
-				// TODO: handle bounds
-				// TODO: handle AST
-				std::cout << "### caret partial ["<<token_text()<<"]\n";
-				advance();
-				continue;
+
+			// implicit `and`
+			if (ast_.size() > 1) {
+				auto r = std::move(ast_.back()); ast_.pop_back();
+				auto l = std::move(ast_.back()); ast_.pop_back();
+				ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
+
+				dump_stack();
+				std::cout << indent_ << "### implicit-and (" << ast_.size() << ")\n";
 			}
-			if (is_tilde(token_)) {
-				// TODO: handle bounds
-				// TODO: handle AST
-				std::cout << "### tilde partial ["<<token_text()<<"]\n";
+
+			if (is_caret(token_) || is_tilde(token_)) {
+				auto l = lower_bound(token_text_);
+				auto u = upper_bound(token_text_);
+				if (l == u) {
+					ast_.push_back(std::make_unique<node>(node::create_eq(l)));
+				} else {
+					ast_.push_back(std::make_unique<node>(node::create_and(
+						std::make_unique<node>(node::create_ge(l)),
+						std::make_unique<node>(node::create_lt(u)))));
+				}
+				dump_stack();
+				std::cout << indent_ << "### caret/tilde partial ["<<token_text_.token<<"]\n";
+
 				advance();
 				continue;
 			}
 			if (is_op(token_)) {
-				// TODO: handle bounds
-				// TODO: handle AST
-				std::cout << "### op partial ["<<token_text()<<"]\n";
+				// TODO: refactoring
+				if (token_text_.op == "<")
+					ast_.push_back(std::make_unique<node>(node::create_lt(semver(token_text_.version))));
+				if (token_text_.op == "<=")
+					ast_.push_back(std::make_unique<node>(node::create_le(semver(token_text_.version))));
+				if (token_text_.op == ">")
+					ast_.push_back(std::make_unique<node>(node::create_gt(semver(token_text_.version))));
+				if (token_text_.op == ">=")
+					ast_.push_back(std::make_unique<node>(node::create_ge(semver(token_text_.version))));
+				if (token_text_.op == "=")
+					ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
+				dump_stack();
+				std::cout << indent_ << "### op partial ["<<token_text_.token<<"]\n";
+
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
-				// TODO: handle bounds
-				// TODO: handle AST
-				std::cout << "### partial ["<<token_text()<<"]\n";
+				ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
+				dump_stack();
+				std::cout << indent_ << "### partial ["<<token_text_.token<<"]\n";
+
 				advance();
 				continue;
 			}
@@ -693,6 +787,12 @@ private:
 			error();
 			return;
 		}
+	}
+
+	void dump_stack() const // TODO: temporary
+	{
+		for (const auto & e : ast_)
+			e->dump(std::cout);
 	}
 };
 
