@@ -477,9 +477,9 @@ public:
 	{
 		switch (type_) {
 			case node_type::op_and:
-				return left_->eval(v) && right_->eval(v);
+				return left_->eval(v) && right_->eval(v); // TODO: shortcut?
 			case node_type::op_or:
-				return left_->eval(v) || right_->eval(v);
+				return left_->eval(v) || right_->eval(v); // TODO: shortcut?
 			case node_type::op_eq:
 				return v == *version_;
 			case node_type::op_lt:
@@ -573,6 +573,7 @@ public:
 		: lex_(trim(s))
 	{
 		parse_range_set();
+		// TODO: optimize AST: for each node swap leafes to the left, enable faster shortcut eval, enable easier range comparison
 	}
 
 	bool ok() const noexcept { return good_; }
@@ -680,7 +681,7 @@ private:
 	bool is_partial(token t) const noexcept { return t == token::partial; }
 	bool is_dash(token t) const noexcept { return t == token::dash; }
 
-	struct indent {
+	struct indent { // TODO: temporary
 		int n = 0;
 
 		friend std::ostream & operator<<(std::ostream & os, const indent & i)
