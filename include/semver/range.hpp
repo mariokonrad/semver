@@ -477,9 +477,21 @@ public:
 	{
 		switch (type_) {
 			case node_type::op_and:
-				return left_->eval(v) && right_->eval(v); // TODO: shortcut?
+				// shortcut behavior
+				if (!left_->eval(v))
+					return false;
+				if (!right_->eval(v))
+					return false;
+				return true;
+
 			case node_type::op_or:
-				return left_->eval(v) || right_->eval(v); // TODO: shortcut?
+				// shortcut behavior
+				if (left_->eval(v))
+					return true;
+				if (right_->eval(v))
+					return true;
+				return false;
+
 			case node_type::op_eq:
 				return v == *version_;
 			case node_type::op_lt:
@@ -595,9 +607,6 @@ public:
 	{
 		if (ast_.empty())
 			return false;
-
-		if (ast_.size() != 1u)
-			dump_stack(); // TODO: temporary
 
 		assert(ast_.size() == 1u);
 		return ast_.back()->eval(v);
