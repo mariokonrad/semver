@@ -77,6 +77,13 @@ TEST_F(test_range_construction, set_4)
 	ASSERT_TRUE(r.ok());
 }
 
+TEST_F(test_range_construction, set_5)
+{
+	const auto r = range(">1.2.3 <2.0.0 || =3.0.0 || >5.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
 TEST_F(test_range_construction, empty)
 {
 	const auto r = range("");

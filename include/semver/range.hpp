@@ -483,6 +483,11 @@ public:
 		return false;
 	}
 
+	void optimize()
+	{
+		optimize_r(*this);
+	}
+
 private:
 	node_type type_;
 	std::unique_ptr<node> left_;
@@ -500,6 +505,30 @@ private:
 		, left_(std::move(left))
 		, right_(std::move(right))
 	{
+	}
+
+	bool is_leaf() const noexcept { return !left_ && !right_; }
+
+	static void optimize_r(node & n) noexcept
+	{
+		// prequisite: the node is either a leaf or has both subtrees.
+		//             this is guaranteed by the factory member functions.
+
+		if (n.is_leaf())
+			return;
+
+		const bool right_is_leaf = n.right_->is_leaf();
+		if (n.left_->is_leaf() && right_is_leaf)
+			return;
+
+		// swap leaf to the right
+		if (right_is_leaf) {
+			using std::swap;
+			swap(n.left_, n.right_);
+		}
+
+		optimize_r(*n.left_);
+		optimize_r(*n.right_);
 	}
 
 	friend void dump(std::ostream &, const node &, int);
@@ -573,7 +602,9 @@ public:
 		: lex_(trim(s))
 	{
 		parse_range_set();
-		// TODO: optimize AST: for each node swap leafes to the left, enable faster shortcut eval, enable easier range comparison
+
+		if (!ast_.empty())
+			ast_.back()->optimize();
 	}
 
 	bool ok() const noexcept { return good_; }
@@ -727,7 +758,7 @@ private:
 			return;
 		}
 
-		while (!is_eof(token_)) {
+		while (!is_eof(token_) && !is_logical_or(token_)) {
 
 			// implicit `and`
 			if (ast_.size() > 1) {
@@ -752,20 +783,26 @@ private:
 			if (is_op(token_)) {
 				// TODO: refactoring
 				if (token_text_.op == "<")
-					ast_.push_back(std::make_unique<node>(node::create_lt(semver(token_text_.version))));
+					ast_.push_back(
+						std::make_unique<node>(node::create_lt(lower_bound(token_text_))));
 				if (token_text_.op == "<=")
-					ast_.push_back(std::make_unique<node>(node::create_le(semver(token_text_.version))));
+					ast_.push_back(
+						std::make_unique<node>(node::create_le(lower_bound(token_text_))));
 				if (token_text_.op == ">")
-					ast_.push_back(std::make_unique<node>(node::create_gt(semver(token_text_.version))));
+					ast_.push_back(
+						std::make_unique<node>(node::create_gt(lower_bound(token_text_))));
 				if (token_text_.op == ">=")
-					ast_.push_back(std::make_unique<node>(node::create_ge(semver(token_text_.version))));
+					ast_.push_back(
+						std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
 				if (token_text_.op == "=")
-					ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
+					ast_.push_back(
+						std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
-				ast_.push_back(std::make_unique<node>(node::create_eq(semver(token_text_.version))));
+				ast_.push_back(
+					std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
 				advance();
 				continue;
 			}
