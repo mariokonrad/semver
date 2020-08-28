@@ -124,6 +124,7 @@ TEST_F(test_range_node, and_1)
 	EXPECT_FALSE(n.eval(semver("2.2.3")));
 }
 
+/*
 TEST_F(test_range_node, transform_leaf_only)
 {
 	auto n = node::create_eq(semver("1.2.3"));
@@ -383,5 +384,6 @@ TEST_F(test_range_node, transform_or_sort_leafs_across_or_nodes)
 	EXPECT_EQ(expected_versions_before, visited_versions_before);
 	EXPECT_EQ(expected_versions_after, visited_versions_after);
 }
+*/
 }
 

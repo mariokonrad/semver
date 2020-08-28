@@ -3,10 +3,11 @@
 
 #include "detail/range_lexer.hpp"
 #include <semver/semver.hpp>
-#include <memory>
-#include <optional>
 #include <deque>
 #include <iostream>
+#include <memory>
+#include <optional>
+#include <vector>
 #include <cassert>
 
 namespace semver
@@ -146,18 +147,16 @@ public:
 		switch (type_) {
 			case type::op_and:
 				// shortcut behavior
-				if (!left_->eval(v))
-					return false;
-				if (!right_->eval(v))
-					return false;
+				for (const auto & n : nodes_)
+					if (!n->eval(v))
+						return false;
 				return true;
 
 			case type::op_or:
 				// shortcut behavior
-				if (left_->eval(v))
-					return true;
-				if (right_->eval(v))
-					return true;
+				for (const auto & n : nodes_)
+					if (n->eval(v))
+						return true;
 				return false;
 
 			case type::op_eq:
@@ -174,36 +173,21 @@ public:
 		return false;
 	}
 
-	void optimize()
-	{
-		transform_leafs_to_left(*this);
-		transform_sort_leafs(*this);
-
-		// TODO: transform leafs of `or` nodes
-		// algorithm idea:
-		//
-		//  traverse tree in-order and do selection sort within the tree on `or` nodes, leave `and` nodes alone
-		//
-	}
-
-	bool is_leaf() const noexcept { return !left_ && !right_; }
+	bool is_leaf() const noexcept { return nodes_.empty(); }
 	type get_type() const { return type_; }
 	std::optional<semver> get_version() const { return version_; }
 
 	template <typename Visitor> void visit_postfix(Visitor v) const
 	{
-		if (left_)
-			left_->visit_postfix(v);
-		if (right_)
-			right_->visit_postfix(v);
+		for (const auto & n : nodes_)
+			n->visit_postfix(v);
 		v(*this);
 	}
 
 private:
 	type type_;
-	std::unique_ptr<node> left_;
-	std::unique_ptr<node> right_;
 	std::optional<semver> version_;
+	std::vector<std::unique_ptr<node>> nodes_;
 
 	node(type t, const semver & s)
 		: type_(t)
@@ -213,48 +197,10 @@ private:
 
 	node(type t, std::unique_ptr<node> left, std::unique_ptr<node> right)
 		: type_(t)
-		, left_(std::move(left))
-		, right_(std::move(right))
 	{
-	}
-
-	static void transform_leafs_to_left(node & n) noexcept
-	{
-		// prequisite: the node is either a leaf or has both subtrees.
-		//             this is guaranteed by the factory member functions.
-
-		if (n.is_leaf())
-			return;
-
-		if (n.left_->is_leaf() && n.right_->is_leaf())
-			return;
-
-		// swap leaf to the right
-		if (n.right_->is_leaf()) {
-			using std::swap;
-			swap(n.left_, n.right_);
-		}
-
-		transform_leafs_to_left(*n.left_);
-		transform_leafs_to_left(*n.right_);
-	}
-
-	static void transform_sort_leafs(node & n) noexcept
-	{
-		if (n.is_leaf())
-			return;
-
-		// having two leafs, make sure the smaller one is on the left
-		if (n.left_->is_leaf() && n.right_->is_leaf()) {
-			if (*n.left_->get_version() > *n.right_->get_version()) {
-				using std::swap;
-				swap(n.left_, n.right_);
-			}
-			return;
-		}
-
-		transform_sort_leafs(*n.left_);
-		transform_sort_leafs(*n.right_);
+		nodes_.reserve(nodes_.size() + 2u);
+		nodes_.push_back(std::move(left));
+		nodes_.push_back(std::move(right));
 	}
 
 	friend void dump(std::ostream &, const node &, int);
@@ -290,17 +236,17 @@ inline void dump(std::ostream & os, const node & n, int indent) // TODO: tempora
 		os << *n.version_;
 	} else {
 		os << '\n';
-		os << std::string(indent * 4, ' ') << "  l: ";
-		dump(os, *n.left_, indent + 1);
-		os << std::string(indent * 4, ' ') << "  r: ";
-		dump(os, *n.right_, indent + 1);
+		for (const auto & child : n.nodes_) {
+			os << std::string(indent * 4, ' ') << "  n: ";
+			dump(os, *child, indent + 1);
+		}
 	}
 
 	os << '\n';
 }
 }
 
-static std::string trim(std::string s)
+static inline std::string trim(std::string s)
 {
 	const auto b = s.find_first_not_of(" ");
 	const auto e = s.find_last_not_of(" ");
@@ -329,8 +275,11 @@ public:
 	{
 		parse_range_set();
 
-		if (!ast_.empty())
-			ast_.back()->optimize();
+		if (!ast_.empty()) {
+
+			// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
+
+		}
 	}
 
 	bool ok() const noexcept { return good_; }
