@@ -84,6 +84,41 @@ TEST_F(test_range_construction, set_5)
 	ASSERT_TRUE(r.ok());
 }
 
+TEST_F(test_range_construction, nonsensical_but_valid_1)
+{
+	const auto r = range(">1.2.3 <2.0.0 5.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, nonsensical_but_valid_2)
+{
+	const auto r = range(">1.2.3 <2.0.0 >5.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, nonsensical_but_valid_3)
+{
+	const auto r = range(">1.2.3 <2.0.0 >1.5");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, nonsensical_but_valid_4)
+{
+	const auto r = range(">1.2.3 <2.0.0 >=2.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, nonsensical_but_valid_5)
+{
+	const auto r = range("<0.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
 TEST_F(test_range_construction, empty)
 {
 	const auto r = range("");
