@@ -126,14 +126,27 @@ public:
 	node(node &&) = default;
 	node & operator=(node &&) = default;
 
-	static node create_and(std::unique_ptr<node> left, std::unique_ptr<node> right)
+	static node create_and(std::unique_ptr<node> first, std::unique_ptr<node> second)
 	{
-		return node(type::op_and, std::move(left), std::move(right));
+		std::vector<std::unique_ptr<node>> v;
+		v.reserve(2);
+		v.push_back(std::move(first));
+		v.push_back(std::move(second));
+		return node(type::op_and, std::move(v));
 	}
 
-	static node create_or(std::unique_ptr<node> left, std::unique_ptr<node> right)
+	static node create_and(std::vector<std::unique_ptr<node>> && v)
 	{
-		return node(type::op_or, std::move(left), std::move(right));
+		return node(type::op_and, std::move(v));
+	}
+
+	static node create_or(std::unique_ptr<node> first, std::unique_ptr<node> second)
+	{
+		std::vector<std::unique_ptr<node>> v;
+		v.reserve(2);
+		v.push_back(std::move(first));
+		v.push_back(std::move(second));
+		return node(type::op_or, std::move(v));
 	}
 
 	static node create_eq(const semver & s) { return {type::op_eq, s}; }
@@ -202,12 +215,10 @@ private:
 	{
 	}
 
-	node(type t, std::unique_ptr<node> left, std::unique_ptr<node> right)
+	node(type t, std::vector<std::unique_ptr<node>> && v)
 		: type_(t)
+		, nodes_(std::move(v))
 	{
-		nodes_.reserve(nodes_.size() + 2u);
-		nodes_.push_back(std::move(left));
-		nodes_.push_back(std::move(right));
 	}
 
 	friend std::ostream & dump_op(std::ostream &, const node &);
@@ -320,6 +331,7 @@ public:
 
 		if (!ast_.empty()) {
 			/* DISABLED
+			std::cout << "---------------------------------\n";
 			// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
 
 			for (const auto & n : ast_)
@@ -441,6 +453,13 @@ private:
 	bool is_partial(token t) const noexcept { return t == token::partial; }
 	bool is_dash(token t) const noexcept { return t == token::dash; }
 
+	std::unique_ptr<node> ast_pop()
+	{
+		auto n = std::move(ast_.back());
+		ast_.pop_back();
+		return n;
+	}
+
 	void parse_range_set() noexcept
 	{
 		start();
@@ -456,17 +475,9 @@ private:
 			parse_range();
 
 			assert(ast_.size() > 1);
-			auto r = std::move(ast_.back()); ast_.pop_back();
-			auto l = std::move(ast_.back()); ast_.pop_back();
-			ast_.push_back(std::make_unique<node>(node::create_or(std::move(l), std::move(r))));
-		}
-
-		// there might be an implicit `and` left here
-		if (ast_.size() > 1) {
-			assert(ast_.size() == 2u);
-			auto r = std::move(ast_.back()); ast_.pop_back();
-			auto l = std::move(ast_.back()); ast_.pop_back();
-			ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
+			auto b = ast_pop();
+			auto a = ast_pop();
+			ast_.push_back(std::make_unique<node>(node::create_or(std::move(a), std::move(b))));
 		}
 
 		good_ = !is_error(token_);
@@ -490,14 +501,9 @@ private:
 			return;
 		}
 
+		int partial_count = 0; // how may partials are participating in implicit and
 		while (!is_eof(token_) && !is_logical_or(token_)) {
-
-			// implicit `and`
-			if (ast_.size() > 1) {
-				auto r = std::move(ast_.back()); ast_.pop_back();
-				auto l = std::move(ast_.back()); ast_.pop_back();
-				ast_.push_back(std::make_unique<node>(node::create_and(std::move(l), std::move(r))));
-			}
+			++partial_count;
 
 			if (is_caret(token_) || is_tilde(token_)) {
 				auto l = lower_bound(token_text_);
@@ -505,9 +511,9 @@ private:
 				if (l == u) {
 					ast_.push_back(std::make_unique<node>(node::create_eq(l)));
 				} else {
-					ast_.push_back(std::make_unique<node>(node::create_and(
-						std::make_unique<node>(node::create_ge(l)),
-						std::make_unique<node>(node::create_lt(u)))));
+					ast_.push_back(std::make_unique<node>(
+						node::create_and(std::make_unique<node>(node::create_ge(l)),
+							std::make_unique<node>(node::create_lt(u)))));
 				}
 				advance();
 				continue;
@@ -541,6 +547,15 @@ private:
 
 			error();
 			return;
+		}
+
+		// are there multiple leafs and therefore an implicit 'and'?
+		if (partial_count > 1) {
+			std::vector<std::unique_ptr<node>> v;
+			for (; partial_count > 0 && ast_.back()->is_leaf(); --partial_count)
+				v.push_back(std::move(ast_pop()));
+			std::reverse(begin(v), end(v));
+			ast_.push_back(std::make_unique<node>(node::create_and(std::move(v))));
 		}
 	}
 };
