@@ -221,43 +221,15 @@ private:
 	{
 	}
 
-	friend std::ostream & dump_op(std::ostream &, const node &);
 	friend std::ostream & dump(std::ostream &, const node &, int);
 	friend std::ostream & dump_leafs_of_or_nodes(std::ostream &, const node &);
 	friend std::ostream & dump_leafs_of_and_nodes(std::ostream &, const node &);
+	friend void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> &, node &);
 };
-
-inline std::ostream & dump_leafs_of_and_nodes(std::ostream & os, const node & n)
-{
-	if (n.type_ == node::type::op_or)
-		return os;
-
-	if (n.type_ == node::type::op_and) {
-		for (const auto & i : n.nodes_)
-			dump_leafs_of_and_nodes(os, *i);
-		return os;
-	}
-
-	return dump_op(os, n) << *n.version_ << ", ";
-}
-
-inline std::ostream & dump_leafs_of_or_nodes(std::ostream & os, const node & n)
-{
-	if (n.type_ == node::type::op_and)
-		return dump_leafs_of_and_nodes(os, n) << '\n';
-
-	if (n.type_ == node::type::op_or) {
-		for (const auto & i : n.nodes_)
-			dump_leafs_of_or_nodes(os, *i);
-		return os;
-	}
-
-	return dump_op(os, n) << *n.version_ << '\n';
-}
 
 inline std::ostream & dump_op(std::ostream & os, const node & n)
 {
-	switch (n.type_) {
+	switch (n.get_type()) {
 		case node::type::op_and:
 			os << "&&";
 			break;
@@ -281,6 +253,49 @@ inline std::ostream & dump_op(std::ostream & os, const node & n)
 			break;
 	}
 	return os;
+}
+
+inline std::ostream & dump_leafs_of_and_nodes(std::ostream & os, const node & n)
+{
+	if (n.type_ == node::type::op_or)
+		return os;
+
+	if (n.type_ == node::type::op_and) {
+		for (const auto & i : n.nodes_)
+			dump_leafs_of_and_nodes(os, *i);
+		return os;
+	}
+
+	return dump_op(os, n) << *n.version_ << "  ";
+}
+
+inline std::ostream & dump_leafs_of_or_nodes(std::ostream & os, const node & n)
+{
+	if (n.type_ == node::type::op_or) {
+		for (const auto & i : n.nodes_)
+			dump_leafs_of_or_nodes(os, *i);
+		return os;
+	}
+
+	if (n.type_ == node::type::op_and)
+		return dump_leafs_of_and_nodes(os, n) << '\n';
+
+	return dump_op(os, n) << *n.version_ << '\n';
+}
+
+inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, node & n)
+{
+	assert(n.get_type() == node::type::op_or);
+
+	for (auto && p : n.nodes_) {
+		if (p->get_type() == node::type::op_or) {
+			collect_leafs_and_andnodes(v, *p);
+		} else if (p->get_type() == node::type::op_and) {
+			v.push_back(std::move(p));
+		} else {
+			v.push_back(std::move(p));
+		}
+	}
 }
 
 inline std::ostream & dump(std::ostream & os, const node & n, int indent) // TODO: temporary
@@ -396,8 +411,9 @@ private:
 		if (ast_back()->get_type() == node::type::op_and)
 			return;
 
+		assert(ast_back()->get_type() == node::type::op_or);
+
 		// TODO: implementation
-		/* DISABLED
 		std::cout << "---------------------------------\n";
 		// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
 
@@ -406,15 +422,16 @@ private:
 
 		std::cout << "---------------------------------\n";
 
-		auto d = [&](const auto & n){ dump_op(std::cout, n) << '\n';};
-		for (const auto & n : ast_)
-			n->visit_prefix(d);
-
-		std::cout << "---------------------------------\n";
-
 		for (const auto & n : ast_)
 			dump_leafs_of_or_nodes(std::cout, *n) << '\n';
-		*/
+
+		std::cout << "---------------------------------\n";
+		//std::vector<std::unique_ptr<node>> v;
+		//collect_leafs_and_andnodes(v, *ast_back());
+		//// TODO: sort v
+		//for (const auto & n : v)
+		//	dump(std::cout, *n, 1);
+		//// TODO: set "ast" to v
 	}
 
 	template <typename Iterator, typename Predicate>
