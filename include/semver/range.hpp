@@ -222,12 +222,30 @@ private:
 	}
 
 	friend std::ostream & dump(std::ostream &, const node &, int);
-	friend std::ostream & dump_leafs_of_or_nodes(std::ostream &, const node &);
-	friend std::ostream & dump_leafs_of_and_nodes(std::ostream &, const node &);
 	friend void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> &, node &);
+
+	friend bool operator==(const node & a, const node & b)
+	{
+		return (a.type_ == b.type_) && (a.version_ == b.version_) && (a.nodes_ == b.nodes_);
+	}
+
+	friend bool operator!=(const node & a, const node & b) { return !(a == b); }
+
+	friend bool operator<(const node & a, const node & b)
+	{
+		if (a.is_leaf() && b.is_leaf())
+			return *a.version_ < *b.version_;
+		if (a.is_leaf() && !b.is_leaf())
+			return true;
+		if (!a.is_leaf() && b.is_leaf())
+			return false;
+		if (!a.is_leaf() && !b.is_leaf())
+			return a.nodes_ < b.nodes_;
+		return false;
+	}
 };
 
-inline std::ostream & dump_op(std::ostream & os, const node & n)
+inline std::ostream & dump_op(std::ostream & os, const node & n) // TODO: temporary
 {
 	switch (n.get_type()) {
 		case node::type::op_and:
@@ -253,34 +271,6 @@ inline std::ostream & dump_op(std::ostream & os, const node & n)
 			break;
 	}
 	return os;
-}
-
-inline std::ostream & dump_leafs_of_and_nodes(std::ostream & os, const node & n)
-{
-	if (n.type_ == node::type::op_or)
-		return os;
-
-	if (n.type_ == node::type::op_and) {
-		for (const auto & i : n.nodes_)
-			dump_leafs_of_and_nodes(os, *i);
-		return os;
-	}
-
-	return dump_op(os, n) << *n.version_ << "  ";
-}
-
-inline std::ostream & dump_leafs_of_or_nodes(std::ostream & os, const node & n)
-{
-	if (n.type_ == node::type::op_or) {
-		for (const auto & i : n.nodes_)
-			dump_leafs_of_or_nodes(os, *i);
-		return os;
-	}
-
-	if (n.type_ == node::type::op_and)
-		return dump_leafs_of_and_nodes(os, n) << '\n';
-
-	return dump_op(os, n) << *n.version_ << '\n';
 }
 
 inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, node & n)
@@ -367,10 +357,14 @@ public:
 	bool satisfies(const semver & v) const noexcept
 	{
 		if (ast_.empty())
-			return false;
+			return true;
 
-		assert(ast_.size() == 1u);
-		return ast_back()->eval(v);
+		// all nodes in AST are implicit `or`
+		for (const auto & n : ast_)
+			if (n->eval(v))
+				return true;
+
+		return false;
 	}
 
 	semver max_satisfying(const std::vector<semver> & versions) const noexcept
@@ -413,25 +407,18 @@ private:
 
 		assert(ast_back()->get_type() == node::type::op_or);
 
-		// TODO: implementation
-		std::cout << "---------------------------------\n";
-		// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
+		// transform AST into a list of `or` connected nodes, simple ones frist.
+		// this makes the structure of the AST more approachable for other algorithms
+		// like comparing ranges.
 
-		for (const auto & n : ast_)
-			dump(std::cout, *n, 1);
+		std::vector<std::unique_ptr<node>> v;
+		collect_leafs_and_andnodes(v, *ast_back());
+		std::sort(begin(v), end(v), [](const auto & a, const auto & b) { return *a < *b; });
 
-		std::cout << "---------------------------------\n";
-
-		for (const auto & n : ast_)
-			dump_leafs_of_or_nodes(std::cout, *n) << '\n';
-
-		std::cout << "---------------------------------\n";
-		//std::vector<std::unique_ptr<node>> v;
-		//collect_leafs_and_andnodes(v, *ast_back());
-		//// TODO: sort v
-		//for (const auto & n : v)
-		//	dump(std::cout, *n, 1);
-		//// TODO: set "ast" to v
+		// TODO: the following is not necessary anymore, once ast_ has been modified to be std::vector
+		ast_ = std::deque<std::unique_ptr<node>>{};
+		for (auto && n : v)
+			ast_.push_back(std::move(n));
 	}
 
 	template <typename Iterator, typename Predicate>
