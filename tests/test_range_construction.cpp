@@ -84,6 +84,27 @@ TEST_F(test_range_construction, set_5)
 	ASSERT_TRUE(r.ok());
 }
 
+TEST_F(test_range_construction, set_6)
+{
+	const auto r = range("3.0.0 || >1.2.3 <2.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, set_7)
+{
+	const auto r = range("=3.0.0 || >1.2.3 <2.0.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
+TEST_F(test_range_construction, set_8)
+{
+	const auto r = range("=3.0.0 || >1.2.3 <2.0.0 || >5.0");
+
+	ASSERT_TRUE(r.ok());
+}
+
 TEST_F(test_range_construction, nonsensical_but_valid_1)
 {
 	const auto r = range(">1.2.3 <2.0.0 5.0.0");

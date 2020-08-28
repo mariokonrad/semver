@@ -184,6 +184,13 @@ public:
 		v(*this);
 	}
 
+	template <typename Visitor> void visit_prefix(Visitor v) const
+	{
+		v(*this);
+		for (const auto & n : nodes_)
+			n->visit_prefix(v);
+	}
+
 private:
 	type type_;
 	std::optional<semver> version_;
@@ -203,10 +210,41 @@ private:
 		nodes_.push_back(std::move(right));
 	}
 
-	friend void dump(std::ostream &, const node &, int);
+	friend std::ostream & dump_op(std::ostream &, const node &);
+	friend std::ostream & dump(std::ostream &, const node &, int);
+	friend std::ostream & dump_leafs_of_or_nodes(std::ostream &, const node &);
+	friend std::ostream & dump_leafs_of_and_nodes(std::ostream &, const node &);
 };
 
-inline void dump(std::ostream & os, const node & n, int indent) // TODO: temporary
+inline std::ostream & dump_leafs_of_and_nodes(std::ostream & os, const node & n)
+{
+	if (n.type_ == node::type::op_or)
+		return os;
+
+	if (n.type_ == node::type::op_and) {
+		for (const auto & i : n.nodes_)
+			dump_leafs_of_and_nodes(os, *i);
+		return os;
+	}
+
+	return dump_op(os, n) << *n.version_ << ", ";
+}
+
+inline std::ostream & dump_leafs_of_or_nodes(std::ostream & os, const node & n)
+{
+	if (n.type_ == node::type::op_and)
+		return dump_leafs_of_and_nodes(os, n) << '\n';
+
+	if (n.type_ == node::type::op_or) {
+		for (const auto & i : n.nodes_)
+			dump_leafs_of_or_nodes(os, *i);
+		return os;
+	}
+
+	return dump_op(os, n) << *n.version_ << '\n';
+}
+
+inline std::ostream & dump_op(std::ostream & os, const node & n)
 {
 	switch (n.type_) {
 		case node::type::op_and:
@@ -231,7 +269,12 @@ inline void dump(std::ostream & os, const node & n, int indent) // TODO: tempora
 			os << ">=";
 			break;
 	}
+	return os;
+}
 
+inline std::ostream & dump(std::ostream & os, const node & n, int indent) // TODO: temporary
+{
+	dump_op(os, n);
 	if (n.version_) {
 		os << *n.version_;
 	} else {
@@ -242,7 +285,7 @@ inline void dump(std::ostream & os, const node & n, int indent) // TODO: tempora
 		}
 	}
 
-	os << '\n';
+	return os << '\n';
 }
 }
 
@@ -276,9 +319,23 @@ public:
 		parse_range_set();
 
 		if (!ast_.empty()) {
-
+			/* DISABLED
 			// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
 
+			for (const auto & n : ast_)
+				dump(std::cout, *n, 1);
+
+			std::cout << "---------------------------------\n";
+
+			auto d = [&](const auto & n){ dump_op(std::cout, n) << '\n';};
+			for (const auto & n : ast_)
+				n->visit_prefix(d);
+
+			std::cout << "---------------------------------\n";
+
+			for (const auto & n : ast_)
+				dump_leafs_of_or_nodes(std::cout, *n) << '\n';
+			*/
 		}
 	}
 
