@@ -490,10 +490,17 @@ private:
 			advance(); // partial
 			advance(); // dash
 			if (is_partial(token_)) {
-				ast_.push_back(std::make_unique<node>(node::create_and(
-					std::make_unique<node>(node::create_ge(lower_bound(first))),
-					std::make_unique<node>(node::create_le(lower_bound(token_text_)))
-					)));
+				auto l = lower_bound(first);
+				auto u = lower_bound(token_text_);
+				if (l == u) {
+					ast_.push_back(std::make_unique<node>(node::create_eq(l)));
+				} else {
+					if (l > u)
+						std::swap(l, u);
+					ast_.push_back(std::make_unique<node>(
+						node::create_and(std::make_unique<node>(node::create_ge(l)),
+							std::make_unique<node>(node::create_le(u)))));
+				}
 				advance();
 				return;
 			}
@@ -554,6 +561,7 @@ private:
 			std::vector<std::unique_ptr<node>> v;
 			for (; partial_count > 0 && ast_.back()->is_leaf(); --partial_count)
 				v.push_back(std::move(ast_pop()));
+			// TODO: sort instead of reverse?
 			std::reverse(begin(v), end(v));
 			ast_.push_back(std::make_unique<node>(node::create_and(std::move(v))));
 		}
