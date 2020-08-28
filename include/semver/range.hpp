@@ -329,26 +329,9 @@ public:
 	{
 		parse_range_set();
 
-		if (!ast_.empty()) {
-			/* DISABLED
-			std::cout << "---------------------------------\n";
-			// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
-
-			for (const auto & n : ast_)
-				dump(std::cout, *n, 1);
-
-			std::cout << "---------------------------------\n";
-
-			auto d = [&](const auto & n){ dump_op(std::cout, n) << '\n';};
-			for (const auto & n : ast_)
-				n->visit_prefix(d);
-
-			std::cout << "---------------------------------\n";
-
-			for (const auto & n : ast_)
-				dump_leafs_of_or_nodes(std::cout, *n) << '\n';
-			*/
-		}
+		assert(ast_.size() <= 1);
+		if (!ast_.empty())
+			flatten_ast();
 	}
 
 	bool ok() const noexcept { return good_; }
@@ -372,7 +355,7 @@ public:
 			return false;
 
 		assert(ast_.size() == 1u);
-		return ast_.back()->eval(v);
+		return ast_back()->eval(v);
 	}
 
 	semver max_satisfying(const std::vector<semver> & versions) const noexcept
@@ -404,6 +387,35 @@ private:
 
 	using node = detail::node;
 	std::deque<std::unique_ptr<node>> ast_;
+
+	void flatten_ast()
+	{
+		if (ast_back()->is_leaf())
+			return;
+
+		if (ast_back()->get_type() == node::type::op_and)
+			return;
+
+		// TODO: implementation
+		/* DISABLED
+		std::cout << "---------------------------------\n";
+		// TODO: transform AST into list of 'or' nodes, containing leafs and consolidated 'and' nodes
+
+		for (const auto & n : ast_)
+			dump(std::cout, *n, 1);
+
+		std::cout << "---------------------------------\n";
+
+		auto d = [&](const auto & n){ dump_op(std::cout, n) << '\n';};
+		for (const auto & n : ast_)
+			n->visit_prefix(d);
+
+		std::cout << "---------------------------------\n";
+
+		for (const auto & n : ast_)
+			dump_leafs_of_or_nodes(std::cout, *n) << '\n';
+		*/
+	}
 
 	template <typename Iterator, typename Predicate>
 	typename Iterator::value_type satisfies_if(
@@ -453,12 +465,18 @@ private:
 	bool is_partial(token t) const noexcept { return t == token::partial; }
 	bool is_dash(token t) const noexcept { return t == token::dash; }
 
+	std::unique_ptr<node> & ast_back() { return ast_.back(); }
+	const std::unique_ptr<node> & ast_back() const { return ast_.back(); }
+
+	void ast_push(std::unique_ptr<node> n) { ast_.push_back(std::move(n)); }
+
 	std::unique_ptr<node> ast_pop()
 	{
-		auto n = std::move(ast_.back());
+		auto n = std::move(ast_back());
 		ast_.pop_back();
 		return n;
 	}
+
 
 	void parse_range_set() noexcept
 	{
@@ -477,7 +495,7 @@ private:
 			assert(ast_.size() > 1);
 			auto b = ast_pop();
 			auto a = ast_pop();
-			ast_.push_back(std::make_unique<node>(node::create_or(std::move(a), std::move(b))));
+			ast_push(std::make_unique<node>(node::create_or(std::move(a), std::move(b))));
 		}
 
 		good_ = !is_error(token_);
@@ -493,11 +511,11 @@ private:
 				auto l = lower_bound(first);
 				auto u = lower_bound(token_text_);
 				if (l == u) {
-					ast_.push_back(std::make_unique<node>(node::create_eq(l)));
+					ast_push(std::make_unique<node>(node::create_eq(l)));
 				} else {
 					if (l > u)
 						std::swap(l, u);
-					ast_.push_back(std::make_unique<node>(
+					ast_push(std::make_unique<node>(
 						node::create_and(std::make_unique<node>(node::create_ge(l)),
 							std::make_unique<node>(node::create_le(u)))));
 				}
@@ -516,9 +534,9 @@ private:
 				auto l = lower_bound(token_text_);
 				auto u = upper_bound(token_text_);
 				if (l == u) {
-					ast_.push_back(std::make_unique<node>(node::create_eq(l)));
+					ast_push(std::make_unique<node>(node::create_eq(l)));
 				} else {
-					ast_.push_back(std::make_unique<node>(
+					ast_push(std::make_unique<node>(
 						node::create_and(std::make_unique<node>(node::create_ge(l)),
 							std::make_unique<node>(node::create_lt(u)))));
 				}
@@ -528,26 +546,20 @@ private:
 			if (is_op(token_)) {
 				// TODO: refactoring
 				if (token_text_.op == "<")
-					ast_.push_back(
-						std::make_unique<node>(node::create_lt(lower_bound(token_text_))));
+					ast_push(std::make_unique<node>(node::create_lt(lower_bound(token_text_))));
 				if (token_text_.op == "<=")
-					ast_.push_back(
-						std::make_unique<node>(node::create_le(lower_bound(token_text_))));
+					ast_push(std::make_unique<node>(node::create_le(lower_bound(token_text_))));
 				if (token_text_.op == ">")
-					ast_.push_back(
-						std::make_unique<node>(node::create_gt(lower_bound(token_text_))));
+					ast_push(std::make_unique<node>(node::create_gt(lower_bound(token_text_))));
 				if (token_text_.op == ">=")
-					ast_.push_back(
-						std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
+					ast_push(std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
 				if (token_text_.op == "=")
-					ast_.push_back(
-						std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+					ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
-				ast_.push_back(
-					std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+				ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
 				advance();
 				continue;
 			}
@@ -559,11 +571,11 @@ private:
 		// are there multiple leafs and therefore an implicit 'and'?
 		if (partial_count > 1) {
 			std::vector<std::unique_ptr<node>> v;
-			for (; partial_count > 0 && ast_.back()->is_leaf(); --partial_count)
+			for (; partial_count > 0 && ast_back()->is_leaf(); --partial_count)
 				v.push_back(std::move(ast_pop()));
 			// TODO: sort instead of reverse?
 			std::reverse(begin(v), end(v));
-			ast_.push_back(std::make_unique<node>(node::create_and(std::move(v))));
+			ast_push(std::make_unique<node>(node::create_and(std::move(v))));
 		}
 	}
 };
