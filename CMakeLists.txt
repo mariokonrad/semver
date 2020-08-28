@@ -28,6 +28,7 @@ target_sources(${PROJECT_NAME}
 	INTERFACE
 		include/semver/semver.hpp
 		include/semver/range.hpp
+		include/semver/detail/range_lexer.hpp
 	)
 target_include_directories(${PROJECT_NAME}
 	INTERFACE
