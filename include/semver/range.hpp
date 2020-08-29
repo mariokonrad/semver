@@ -219,6 +219,8 @@ private:
 		: type_(t)
 		, nodes_(std::move(v))
 	{
+		std::sort(
+			begin(nodes_), end(nodes_), [](const auto & a, const auto & b) { return *a < *b; });
 	}
 
 	friend std::ostream & dump(std::ostream &, const node &, int);
@@ -575,8 +577,6 @@ private:
 			std::vector<std::unique_ptr<node>> v;
 			for (; partial_count > 0 && ast_back()->is_leaf(); --partial_count)
 				v.push_back(std::move(ast_pop()));
-			// TODO: sort instead of reverse?
-			std::reverse(begin(v), end(v));
 			ast_push(std::make_unique<node>(node::create_and(std::move(v))));
 		}
 	}
