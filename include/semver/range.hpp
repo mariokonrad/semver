@@ -548,6 +548,11 @@ private:
 			advance(); // dash
 			if (is_partial(token_)) {
 				auto l = lower_bound(first);
+				// TODO: according to the examples provided here: https://github.com/npm/node-semver#versions,
+				//       use lower_bound/le if it was a complete partial, upper_bound/lt otherwise, e.g.:
+				//       2.3.4 -> <=2.3.4
+				//       2.3   -> <2.4.0-0
+				//       2     -> <3.0.0-0
 				auto u = lower_bound(token_text_);
 				if (l == u) {
 					ast_push(std::make_unique<node>(node::create_eq(l)));
