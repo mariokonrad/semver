@@ -378,7 +378,6 @@ public:
 		return satisfies_if(begin(versions), end(versions), std::less<> {});
 	}
 
-	// TODO: really keep this function? It's basically just noise.
 	bool outside(const semver & v) const noexcept { return !satisfies(v); }
 
 private:
