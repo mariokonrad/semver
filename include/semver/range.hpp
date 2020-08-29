@@ -369,14 +369,12 @@ public:
 
 	semver max_satisfying(const std::vector<semver> & versions) const noexcept
 	{
-		// TODO: benchmark what is better: linear search or sort before
-		return satisfies_if(begin(versions), end(versions), std::greater<>{});
+		return satisfies_if(begin(versions), end(versions), std::greater<> {});
 	}
 
 	semver min_satisfying(const std::vector<semver> & versions) const noexcept
 	{
-		// TODO: benchmark what is better: linear search or sort before
-		return satisfies_if(begin(versions), end(versions), std::less<>{});
+		return satisfies_if(begin(versions), end(versions), std::less<> {});
 	}
 
 	// TODO: really keep this function? It's basically just noise.

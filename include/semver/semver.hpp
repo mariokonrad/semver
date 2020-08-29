@@ -13,7 +13,6 @@ namespace semver
 {
 inline namespace v1
 {
-
 // Implementation of semver 2.0.0
 //
 class semver final
