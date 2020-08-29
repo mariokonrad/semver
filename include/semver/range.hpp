@@ -203,6 +203,65 @@ public:
 			n->visit_prefix(v);
 	}
 
+	friend std::ostream & operator<<(std::ostream & os, const node::type t)
+	{
+		switch (t) {
+			case type::op_and:
+				os << "&&";
+				break;
+			case type::op_or:
+				os << "||";
+				break;
+			case type::op_eq:
+				os << "==";
+				break;
+			case type::op_lt:
+				os << "< ";
+				break;
+			case type::op_le:
+				os << "<=";
+				break;
+			case type::op_gt:
+				os << "> ";
+				break;
+			case type::op_ge:
+				os << ">=";
+				break;
+		}
+		return os;
+	}
+
+	friend bool operator==(const node & a, const node & b)
+	{
+		return (a.type_ == b.type_) && (a.version_ == b.version_)
+			&& (a.nodes_.size() == b.nodes_.size())
+			&& std::equal(begin(a.nodes_), end(a.nodes_), begin(b.nodes_),
+				[](const auto & x, const auto & y) { return *x == *y; });
+	}
+
+	friend bool operator!=(const node & a, const node & b) { return !(a == b); }
+
+	// This is not an operator, because it has a special semantic in regards
+	// of comparing elements of non-leaf nodes. This function is for soring nodes.
+	static bool less(const node & a, const node & b)
+	{
+		if (a.is_leaf() && b.is_leaf())
+			return *a.version_ < *b.version_;
+		if (a.is_leaf() && !b.is_leaf())
+			return true;
+		if (!a.is_leaf() && b.is_leaf())
+			return false;
+		if (!a.is_leaf() && !b.is_leaf()) {
+			if (a.nodes_.size() != b.nodes_.size())
+				return false;
+
+			// less if one element is less than the corresponding element
+			return compare_seq_if(begin(a.nodes_), end(a.nodes_), begin(b.nodes_),
+				[](const auto & x, const auto & y) { return node::less(*x, *y); });
+		}
+		return false;
+	}
+
 private:
 	type type_;
 	std::optional<semver> version_;
@@ -218,61 +277,22 @@ private:
 		: type_(t)
 		, nodes_(std::move(v))
 	{
-		std::sort(
-			begin(nodes_), end(nodes_), [](const auto & a, const auto & b) { return *a < *b; });
+		std::sort(begin(nodes_), end(nodes_),
+			[](const auto & a, const auto & b) { return node::less(*a, *b); });
+	}
+
+	template <typename Iterator, typename Cmp>
+	static bool compare_seq_if(Iterator first_1, Iterator last_1, Iterator first_2, Cmp cmp)
+	{
+		for (; first_1 != last_1; ++first_1, ++first_2)
+			if (cmp(*first_1, *first_2))
+				return true;
+		return false;
 	}
 
 	friend std::ostream & dump(std::ostream &, const node &, int);
 	friend void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> &, node &);
-
-	friend bool operator==(const node & a, const node & b)
-	{
-		return (a.type_ == b.type_) && (a.version_ == b.version_) && (a.nodes_ == b.nodes_);
-	}
-
-	friend bool operator!=(const node & a, const node & b) { return !(a == b); }
-
-	friend bool operator<(const node & a, const node & b)
-	{
-		if (a.is_leaf() && b.is_leaf())
-			return *a.version_ < *b.version_;
-		if (a.is_leaf() && !b.is_leaf())
-			return true;
-		if (!a.is_leaf() && b.is_leaf())
-			return false;
-		if (!a.is_leaf() && !b.is_leaf())
-			return a.nodes_ < b.nodes_;
-		return false;
-	}
 };
-
-inline std::ostream & dump_op(std::ostream & os, const node & n) // TODO: temporary
-{
-	switch (n.get_type()) {
-		case node::type::op_and:
-			os << "&&";
-			break;
-		case node::type::op_or:
-			os << "||";
-			break;
-		case node::type::op_eq:
-			os << "==";
-			break;
-		case node::type::op_lt:
-			os << "< ";
-			break;
-		case node::type::op_le:
-			os << "<=";
-			break;
-		case node::type::op_gt:
-			os << "> ";
-			break;
-		case node::type::op_ge:
-			os << ">=";
-			break;
-	}
-	return os;
-}
 
 inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, node & n)
 {
@@ -291,7 +311,7 @@ inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, n
 
 inline std::ostream & dump(std::ostream & os, const node & n, int indent) // TODO: temporary
 {
-	dump_op(os, n);
+	os << n.get_type();
 	if (n.version_) {
 		os << *n.version_;
 	} else {
@@ -386,6 +406,7 @@ private:
 
 	bool good_ = false;
 
+	// TODO: separate the use of lexer to a range factory or range parser
 	detail::lexer lex_;
 	detail::lexer::token token_ = detail::lexer::token::eof;
 	detail::lexer::token next_ = detail::lexer::token::eof;
@@ -411,7 +432,8 @@ private:
 
 		std::vector<std::unique_ptr<node>> v;
 		collect_leafs_and_andnodes(v, *ast_back());
-		std::sort(begin(v), end(v), [](const auto & a, const auto & b) { return *a < *b; });
+		std::sort(begin(v), end(v),
+			[](const auto & a, const auto & b) { return node::less(*a, *b); });
 		ast_ = std::move(v);
 	}
 
@@ -574,23 +596,23 @@ private:
 			ast_push(std::make_unique<node>(node::create_and(std::move(v))));
 		}
 	}
+
+	friend bool operator==(const range & r1, const range & r2) noexcept
+	{
+		if (r1.ast_.size() != r2.ast_.size())
+			return false;
+
+		return std::equal(begin(r1.ast_), end(r1.ast_), begin(r2.ast_),
+			[](const auto & a, const auto & b) { return *a == *b; });
+	}
+
+	friend bool operator!=(const range & r1, const range & r2) noexcept { return !(r1 == r2); }
 };
 
 inline bool intersect(const range &, const range &) noexcept
 {
 	// TODO: implementation
 	return false;
-}
-
-inline bool operator==(const range &, const range &) noexcept
-{
-	// TODO: implementation
-	return false;
-}
-
-inline bool operator!=(const range & r1, const range & r2) noexcept
-{
-	return !(r1 == r2);
 }
 }
 }

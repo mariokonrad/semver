@@ -124,6 +124,158 @@ TEST_F(test_range_node, and_1)
 	EXPECT_FALSE(n.eval(semver("2.2.3")));
 }
 
+TEST_F(test_range_node, equal_leafs_1)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_eq(semver("1.2.3"));
+
+	EXPECT_EQ(n1, n2);
+}
+
+TEST_F(test_range_node, equal_leafs_2)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_lt(semver("1.2.3"));
+
+	EXPECT_NE(n1, n2);
+}
+
+TEST_F(test_range_node, equal_leafs_3)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_le(semver("1.2.3"));
+
+	EXPECT_NE(n1, n2);
+}
+
+TEST_F(test_range_node, equal_leafs_4)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_gt(semver("1.2.3"));
+
+	EXPECT_NE(n1, n2);
+}
+
+TEST_F(test_range_node, equal_leafs_5)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_ge(semver("1.2.3"));
+
+	EXPECT_NE(n1, n2);
+}
+
+TEST_F(test_range_node, equal_leaf_nonleaf)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+
+	EXPECT_NE(n1, n2);
+}
+
+TEST_F(test_range_node, equal_nonleafs)
+{
+	const auto n1 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+
+	EXPECT_EQ(n1, n2);
+}
+
+TEST_F(test_range_node, less_leafs_1)
+{
+	const auto n1 = node::create_eq(semver("1.2.0"));
+	const auto n2 = node::create_eq(semver("1.5.0"));
+
+	EXPECT_TRUE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_leafs_2)
+{
+	const auto n1 = node::create_eq(semver("1.2.0"));
+	const auto n2 = node::create_lt(semver("1.5.0"));
+
+	EXPECT_TRUE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_leafs_3)
+{
+	const auto n1 = node::create_eq(semver("1.5.0"));
+	const auto n2 = node::create_eq(semver("1.5.0"));
+
+	EXPECT_FALSE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_leaf_nonleaf)
+{
+	const auto n1 = node::create_eq(semver("1.2.3"));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+
+	EXPECT_TRUE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_nonleafs_same)
+{
+	const auto n1 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.0.0"))));
+
+	EXPECT_FALSE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_nonleafs_diff_1)
+{
+	const auto n1 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("1.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("3.0.0"))));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("2.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("3.0.0"))));
+
+	EXPECT_TRUE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_nonleafs_diff_2)
+{
+	const auto n1 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("2.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("2.5.0"))));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("2.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("3.0.0"))));
+
+	EXPECT_TRUE(node::less(n1, n2));
+	EXPECT_FALSE(node::less(n2, n1));
+}
+
+TEST_F(test_range_node, less_nonleafs_diff_3)
+{
+	const auto n1 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("2.5.0"))),
+		std::make_unique<node>(node::create_lt(semver("3.0.0"))));
+	const auto n2 = node::create_and(
+		std::make_unique<node>(node::create_gt(semver("2.0.0"))),
+		std::make_unique<node>(node::create_lt(semver("3.0.0"))));
+
+	EXPECT_FALSE(node::less(n1, n2));
+	EXPECT_TRUE(node::less(n2, n1));
+}
+
 /*
 TEST_F(test_range_node, transform_leaf_only)
 {
