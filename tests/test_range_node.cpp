@@ -8,6 +8,18 @@ using semver = semver::semver;
 
 class test_range_node : public ::testing::Test {};
 
+TEST_F(test_range_node, version)
+{
+	const auto v = semver("2.4.0-0");
+
+	ASSERT_TRUE(v.ok());
+
+	const auto n = node::create_lt(v);
+
+	EXPECT_EQ(node::type::op_lt, n.get_type());
+	EXPECT_EQ(v, n.get_version());
+}
+
 TEST_F(test_range_node, eq)
 {
 	const auto n = node::create_eq(semver("1.2.3"));
