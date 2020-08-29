@@ -358,7 +358,7 @@ public:
 	bool satisfies(const semver & v) const noexcept
 	{
 		if (ast_.empty())
-			return true;
+			return false;
 
 		// all nodes in AST are implicit `or`
 		for (const auto & n : ast_)
