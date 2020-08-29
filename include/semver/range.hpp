@@ -3,7 +3,6 @@
 
 #include "detail/range_lexer.hpp"
 #include <semver/semver.hpp>
-#include <deque>
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -395,7 +394,7 @@ private:
 	detail::lexer::parts next_text_ = {};
 
 	using node = detail::node;
-	std::deque<std::unique_ptr<node>> ast_;
+	std::vector<std::unique_ptr<node>> ast_;
 
 	void flatten_ast()
 	{
@@ -414,11 +413,7 @@ private:
 		std::vector<std::unique_ptr<node>> v;
 		collect_leafs_and_andnodes(v, *ast_back());
 		std::sort(begin(v), end(v), [](const auto & a, const auto & b) { return *a < *b; });
-
-		// TODO: the following is not necessary anymore, once ast_ has been modified to be std::vector
-		ast_ = std::deque<std::unique_ptr<node>>{};
-		for (auto && n : v)
-			ast_.push_back(std::move(n));
+		ast_ = std::move(v);
 	}
 
 	template <typename Iterator, typename Predicate>
@@ -477,7 +472,7 @@ private:
 	std::unique_ptr<node> ast_pop()
 	{
 		auto n = std::move(ast_back());
-		ast_.pop_back();
+		ast_.erase(prev(end(ast_)));
 		return n;
 	}
 
