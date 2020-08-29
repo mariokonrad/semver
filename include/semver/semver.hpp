@@ -7,7 +7,6 @@
 #include <limits>
 #include <ostream>
 #include <string>
-#include <string_view>
 
 namespace semver
 {
@@ -17,9 +16,6 @@ inline namespace v1
 //
 class semver final
 {
-private:
-	using char_type = std::string::value_type;
-
 public:
 	using number_type = unsigned long;
 
@@ -53,8 +49,8 @@ public:
 	number_type major() const noexcept { return major_; }
 	number_type minor() const noexcept { return minor_; }
 	number_type patch() const noexcept { return patch_; }
-	std::string_view build() const noexcept { return build_; }
-	std::string_view prerelease() const noexcept { return prerelease_; }
+	std::string build() const noexcept { return build_; }
+	std::string prerelease() const noexcept { return prerelease_; }
 
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
@@ -93,6 +89,8 @@ public:
 	}
 
 private:
+	using char_type = std::string::value_type;
+
 	const char_type * last_ = {};
 	const char_type * start_ = {};
 	const char_type * cursor_ = {};
@@ -101,8 +99,8 @@ private:
 	number_type major_ = {};
 	number_type minor_ = {};
 	number_type patch_ = {};
-	std::string_view prerelease_ = {};
-	std::string_view build_ = {};
+	std::string prerelease_ = {};
+	std::string build_ = {};
 
 	std::string data_;
 	bool good_ = false;
@@ -115,9 +113,9 @@ private:
 	{
 	}
 
-	static std::string_view token(const char_type * start, const char_type * end) noexcept
+	static std::string token(const char_type * start, const char_type * end) noexcept
 	{
-		return std::string_view {start, static_cast<std::string_view::size_type>(end - start)};
+		return std::string(start, end);
 	}
 
 	void parse_valid_semver() noexcept
@@ -338,15 +336,15 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 	//     1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2
 	//     < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
 	//
-	std::string_view::size_type c1 = 0u;
-	std::string_view::size_type c2 = 0u;
+	std::string::size_type c1 = 0u;
+	std::string::size_type c2 = 0u;
 	for (;;) {
 
 		const auto c1e = p1.find('.', c1);
 		const auto c2e = p2.find('.', c2);
 
 		// numerical vs alphanumerical fields? alphanumerical alwasys wins
-		auto find_alpha_in_substr = [](std::string_view s, auto start_pos, auto end_pos) {
+		auto find_alpha_in_substr = [](const std::string & s, auto start_pos, auto end_pos) {
 			const auto sub = s.substr(start_pos, end_pos);
 			return std::find_if(begin(sub), end(sub), std::not_fn(::isdigit)) == end(sub);
 		};
@@ -384,11 +382,11 @@ inline bool operator<(const semver & v1, const semver & v2) noexcept
 
 		// compare number of fields, unil now all fields were the same, the one with
 		// more fields is the higher version
-		if ((c1e != std::string_view::npos) && (c2e == std::string_view::npos))
+		if ((c1e != std::string::npos) && (c2e == std::string::npos))
 			return false; // p1 has more fields
-		if ((c1e == std::string_view::npos) && (c2e != std::string_view::npos))
+		if ((c1e == std::string::npos) && (c2e != std::string::npos))
 			return true; // p2 has more fields
-		if ((c1e == std::string_view::npos) && (c2e == std::string_view::npos))
+		if ((c1e == std::string::npos) && (c2e == std::string::npos))
 			return false; // both exhausted
 
 		// all were the same until now, on to the next field
