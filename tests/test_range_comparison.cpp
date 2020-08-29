@@ -54,7 +54,7 @@ TEST_F(test_range_comparison, equality_of_hyphen_and_explicit_2)
 TEST_F(test_range_comparison, equality_of_hyphen_and_explicit_3)
 {
 	const auto r1 = range("1.2.3 - 2.3");
-	const auto r2 = range(">=1.2.3 <2.4.0");
+	const auto r2 = range(">=1.2.3 <2.4.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -65,7 +65,7 @@ TEST_F(test_range_comparison, equality_of_hyphen_and_explicit_3)
 TEST_F(test_range_comparison, equality_of_hyphen_and_explicit_4)
 {
 	const auto r1 = range("1.2.3 - 2");
-	const auto r2 = range(">=1.2.3 <3.0.0");
+	const auto r2 = range(">=1.2.3 <3.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());

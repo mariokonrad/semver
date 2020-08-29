@@ -66,6 +66,7 @@ target_sources(testrunner
 		tests/test_range_node.cpp
 		tests/test_range_lexer.cpp
 		tests/test_range_bounds.cpp
+		tests/test_range_string.cpp
 	)
 target_compile_options(testrunner
 	PRIVATE

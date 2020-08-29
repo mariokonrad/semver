@@ -4,6 +4,7 @@
 #include "detail/range_lexer.hpp"
 #include <semver/semver.hpp>
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -187,7 +188,7 @@ public:
 
 	bool is_leaf() const noexcept { return nodes_.empty(); }
 	type get_type() const { return type_; }
-	std::optional<semver> get_version() const { return version_; }
+	semver get_version() const { return *version_; }
 
 	template <typename Visitor> void visit_postfix(Visitor v) const
 	{
@@ -213,16 +214,16 @@ public:
 				os << "||";
 				break;
 			case type::op_eq:
-				os << "==";
+				os << "=";
 				break;
 			case type::op_lt:
-				os << "< ";
+				os << "<";
 				break;
 			case type::op_le:
 				os << "<=";
 				break;
 			case type::op_gt:
-				os << "> ";
+				os << ">";
 				break;
 			case type::op_ge:
 				os << ">=";
@@ -292,6 +293,24 @@ private:
 
 	friend std::ostream & dump(std::ostream &, const node &, int);
 	friend void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> &, node &);
+
+	friend std::ostream & operator<<(std::ostream & os, const node & n)
+	{
+		if (n.is_leaf()) {
+			os << n.get_type() << n.get_version();
+		} else {
+			bool first = true;
+			for (const auto & c : n.nodes_) {
+				if (first) {
+					first = false;
+				} else {
+					os << " ";
+				}
+				os << *c;
+			}
+		}
+		return os;
+	}
 };
 
 inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, node & n)
@@ -607,7 +626,32 @@ private:
 	}
 
 	friend bool operator!=(const range & r1, const range & r2) noexcept { return !(r1 == r2); }
+
+	friend std::string to_string(const range &);
 };
+
+inline std::string to_string(const range & r)
+{
+	std::ostringstream os;
+
+	bool first = true;
+	for (const auto & n : r.ast_) {
+		if (first) {
+			first = false;
+		} else {
+			os << " || ";
+		}
+
+		os << *n;
+	}
+
+	return os.str();
+}
+
+inline std::ostream & operator<<(std::ostream & os, const range & r)
+{
+	return os << to_string(r);
+}
 
 inline bool intersect(const range &, const range &) noexcept
 {
