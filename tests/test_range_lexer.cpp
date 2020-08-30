@@ -257,7 +257,7 @@ TEST_F(test_range_lexer, full_version_with_prerelease)
 	EXPECT_TRUE(l.text().full_version);
 }
 
-TEST_F(test_range_lexer, full_version_major_only)
+TEST_F(test_range_lexer, not_full_version_major_only)
 {
 	lexer l("1");
 
@@ -265,9 +265,17 @@ TEST_F(test_range_lexer, full_version_major_only)
 	EXPECT_FALSE(l.text().full_version);
 }
 
-TEST_F(test_range_lexer, full_version_major_minor_only)
+TEST_F(test_range_lexer, not_version_major_minor_only)
 {
 	lexer l("1.2");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, not_version_major_as_wildcard)
+{
+	lexer l("*");
 
 	EXPECT_EQ(lexer::token::partial, l.scan());
 	EXPECT_FALSE(l.text().full_version);
