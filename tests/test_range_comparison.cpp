@@ -154,7 +154,7 @@ TEST_F(test_range_comparison, equality_of_xrange_and_explicit_6)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_1)
 {
 	const auto r1 = range("~1.2.3");
-	const auto r2 = range(">=1.2.3 <1.3.0");
+	const auto r2 = range(">=1.2.3 <1.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -165,7 +165,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_1)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_2)
 {
 	const auto r1 = range("~1.2");
-	const auto r2 = range(">=1.2.0 <1.3.0");
+	const auto r2 = range(">=1.2.0 <1.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -176,7 +176,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_2)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_3)
 {
 	const auto r1 = range("~1");
-	const auto r2 = range(">=1.0.0 <2.0.0");
+	const auto r2 = range(">=1.0.0 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -187,7 +187,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_3)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_4)
 {
 	const auto r1 = range("~0.2.3");
-	const auto r2 = range(">=0.2.3 <0.3.0");
+	const auto r2 = range(">=0.2.3 <0.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -198,7 +198,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_4)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_5)
 {
 	const auto r1 = range("~0.2");
-	const auto r2 = range(">=0.2.0 <0.3.0");
+	const auto r2 = range(">=0.2.0 <0.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -209,7 +209,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_5)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_6)
 {
 	const auto r1 = range("~0");
-	const auto r2 = range(">=0.0.0 <1.0.0");
+	const auto r2 = range(">=0.0.0 <1.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -220,7 +220,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_6)
 TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_7)
 {
 	const auto r1 = range("~1.2.3-beta.2");
-	const auto r2 = range(">=1.2.3-beta.2 <1.3.0");
+	const auto r2 = range(">=1.2.3-beta.2 <1.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -231,7 +231,7 @@ TEST_F(test_range_comparison, equality_of_tilde_range_and_explicit_7)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_1)
 {
 	const auto r1 = range("^1.2.3");
-	const auto r2 = range(">=1.2.3 <2.0.0");
+	const auto r2 = range(">=1.2.3 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -242,7 +242,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_1)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_2)
 {
 	const auto r1 = range("^0.2.3");
-	const auto r2 = range(">=0.2.3 <0.3.0");
+	const auto r2 = range(">=0.2.3 <0.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -253,7 +253,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_2)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_3)
 {
 	const auto r1 = range("^0.0.3");
-	const auto r2 = range(">=0.0.3 <0.0.4");
+	const auto r2 = range(">=0.0.3 <0.0.4-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -264,7 +264,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_3)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_4)
 {
 	const auto r1 = range("^1.2.3-beta.2");
-	const auto r2 = range(">=1.2.3-beta.2 <2.0.0");
+	const auto r2 = range(">=1.2.3-beta.2 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -275,7 +275,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_4)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_5)
 {
 	const auto r1 = range("^0.0.3-beta");
-	const auto r2 = range(">=0.0.3-beta <0.0.4");
+	const auto r2 = range(">=0.0.3-beta <0.0.4-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -286,7 +286,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_5)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_6)
 {
 	const auto r1 = range("^1.2.x");
-	const auto r2 = range(">=1.2.0 <2.0.0");
+	const auto r2 = range(">=1.2.0 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -297,7 +297,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_6)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_7)
 {
 	const auto r1 = range("^0.0.x");
-	const auto r2 = range(">=0.0.0 <0.1.0");
+	const auto r2 = range(">=0.0.0 <0.1.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -308,7 +308,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_7)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_8)
 {
 	const auto r1 = range("^0.0");
-	const auto r2 = range(">=0.0.0 <0.1.0");
+	const auto r2 = range(">=0.0.0 <0.1.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -319,7 +319,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_8)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_9)
 {
 	const auto r1 = range("^1.x");
-	const auto r2 = range(">=1.0.0 <2.0.0");
+	const auto r2 = range(">=1.0.0 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -330,7 +330,7 @@ TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_9)
 TEST_F(test_range_comparison, equality_of_caret_range_and_explicit_10)
 {
 	const auto r1 = range("^0.x");
-	const auto r2 = range(">=0.0.0 <1.0.0");
+	const auto r2 = range(">=0.0.0 <1.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
