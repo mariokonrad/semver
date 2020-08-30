@@ -585,6 +585,8 @@ private:
 				auto u = upper_bound(token_text_);
 				if (l == u) {
 					ast_push(std::make_unique<node>(node::create_eq(l)));
+				} else if (u == semver::max()) {
+					ast_push(std::make_unique<node>(node::create_ge(l)));
 				} else {
 					ast_push(std::make_unique<node>(
 						node::create_and(std::make_unique<node>(node::create_ge(l)),
@@ -609,8 +611,22 @@ private:
 				continue;
 			}
 			if (is_partial(token_)) {
-				// TODO: if the version contains wildcards, handle it as range
-				ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+				// if the version contains wildcards, handle it as range
+				if (token_text_.full_version) {
+					ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+				} else {
+					auto l = lower_bound(token_text_);
+					auto u = upper_bound(token_text_);
+					if (l == u) {
+						ast_push(std::make_unique<node>(node::create_eq(l)));
+					} else if (u == semver::max()) {
+						ast_push(std::make_unique<node>(node::create_ge(l)));
+					} else {
+						ast_push(std::make_unique<node>(
+							node::create_and(std::make_unique<node>(node::create_ge(l)),
+								std::make_unique<node>(node::create_lt(u)))));
+					}
+				}
 				advance();
 				continue;
 			}

@@ -87,7 +87,7 @@ TEST_F(test_range_comparison, equality_of_xrange_and_explicit_1)
 TEST_F(test_range_comparison, equality_of_xrange_and_explicit_2)
 {
 	const auto r1 = range("1.x");
-	const auto r2 = range(">=1.0.0 <2.0.0");
+	const auto r2 = range(">=1.0.0 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -98,7 +98,7 @@ TEST_F(test_range_comparison, equality_of_xrange_and_explicit_2)
 TEST_F(test_range_comparison, equality_of_xrange_and_explicit_3)
 {
 	const auto r1 = range("1.2.x");
-	const auto r2 = range(">=1.2.0 <1.3.0");
+	const auto r2 = range(">=1.2.0 <1.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -125,7 +125,7 @@ TEST_F(test_range_comparison, equality_of_xrange_and_explicit_5)
 {
 	const auto r1 = range("1");
 	const auto r2 = range("1.x.x");
-	const auto r3 = range(">=1.0.0 <2.0.0");
+	const auto r3 = range(">=1.0.0 <2.0.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
@@ -140,7 +140,7 @@ TEST_F(test_range_comparison, equality_of_xrange_and_explicit_6)
 {
 	const auto r1 = range("1.2");
 	const auto r2 = range("1.2.x");
-	const auto r3 = range(">=1.2.0 <1.3.0");
+	const auto r3 = range(">=1.2.0 <1.3.0-0");
 
 	ASSERT_TRUE(r1.ok());
 	ASSERT_TRUE(r2.ok());
