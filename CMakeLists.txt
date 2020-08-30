@@ -50,6 +50,10 @@ add_executable(range-check)
 target_sources(range-check PRIVATE example/range-check.cpp)
 target_link_libraries(range-check PRIVATE semver)
 
+add_executable(range-normalize)
+target_sources(range-normalize PRIVATE example/range-normalize.cpp)
+target_link_libraries(range-normalize PRIVATE semver)
+
 ### testing
 enable_testing()
 add_executable(testrunner)
