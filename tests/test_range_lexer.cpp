@@ -216,5 +216,61 @@ TEST_F(test_range_lexer, op_partial_invalid)
 	EXPECT_EQ(lexer::token::error, lexer("#1.2.3").scan());
 	EXPECT_EQ(lexer::token::error, lexer("@1.2.3").scan());
 }
+
+TEST_F(test_range_lexer, full_version)
+{
+	lexer l("1.2.3");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_TRUE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_but_wildcard_on_major)
+{
+	lexer l("*.2.3");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_but_wildcard_on_minor)
+{
+	lexer l("1.*.3");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_but_wildcard_on_patch)
+{
+	lexer l("1.2.*");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_with_prerelease)
+{
+	lexer l("1.2.3-alpha");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_TRUE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_major_only)
+{
+	lexer l("1");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
+
+TEST_F(test_range_lexer, full_version_major_minor_only)
+{
+	lexer l("1.2");
+
+	EXPECT_EQ(lexer::token::partial, l.scan());
+	EXPECT_FALSE(l.text().full_version);
+}
 }
 

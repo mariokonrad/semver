@@ -548,20 +548,26 @@ private:
 			advance(); // dash
 			if (is_partial(token_)) {
 				auto l = lower_bound(first);
-				// TODO: according to the examples provided here: https://github.com/npm/node-semver#versions,
-				//       use lower_bound/le if it was a complete partial, upper_bound/lt otherwise, e.g.:
-				//       2.3.4 -> <=2.3.4
-				//       2.3   -> <2.4.0-0
-				//       2     -> <3.0.0-0
-				auto u = lower_bound(token_text_);
+
+				// according to the examples provided here: https://github.com/npm/node-semver#versions,
+				// use lower_bound/le if it was a complete partial, upper_bound/lt otherwise
+				auto u = token_text_.full_version ? lower_bound(token_text_)
+												  : upper_bound(token_text_);
+
 				if (l == u) {
 					ast_push(std::make_unique<node>(node::create_eq(l)));
 				} else {
 					if (l > u)
 						std::swap(l, u);
-					ast_push(std::make_unique<node>(
-						node::create_and(std::make_unique<node>(node::create_ge(l)),
-							std::make_unique<node>(node::create_le(u)))));
+					if (token_text_.full_version) {
+						ast_push(
+							std::make_unique<node>(node::create_and(std::make_unique<node>(node::create_ge(l)),
+								std::make_unique<node>(node::create_le(u)))));
+					} else {
+						ast_push(
+							std::make_unique<node>(node::create_and(std::make_unique<node>(node::create_ge(l)),
+								std::make_unique<node>(node::create_lt(u)))));
+					}
 				}
 				advance();
 				return;

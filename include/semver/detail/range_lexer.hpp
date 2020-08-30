@@ -1,6 +1,7 @@
 #ifndef SEMVER_DETAIL_RANGE_LEXER_HPP
 #define SEMVER_DETAIL_RANGE_LEXER_HPP
 
+#include <algorithm>
 #include <string>
 #include <cassert>
 
@@ -26,10 +27,13 @@ public:
 		eof
 	};
 
+	// structure to hold scanned parts, not all are strictly necessary but
+	// caching them makes it easier to process the result.
 	struct parts {
 		string_type token = {}; // full token
 
 		string_type version = {}; // version without op/tilde/caret
+		bool full_version = false; // all three parts, major.minor.patch, were parsed
 
 		// indivisual parts
 		string_type op = {};
@@ -123,6 +127,12 @@ private:
 		const auto d = std::distance(start, cursor_);
 		assert(d >= 0);
 		s = string_type(start, static_cast<std::size_t>(d));
+	}
+
+	bool is_numerical(const string_type & s) const
+	{
+		return std::find_if_not(begin(s), end(s), [](const auto c) { return isdigit(c); })
+			== end(s);
 	}
 
 	void error() noexcept { error_ = cursor_; }
@@ -248,6 +258,8 @@ private:
 
 	void scan_partial()
 	{
+		parts_.full_version = false;
+
 		scan_major();
 
 		if (!is_dot())
@@ -261,6 +273,9 @@ private:
 		advance(1);
 
 		scan_patch();
+
+		parts_.full_version = is_numerical(parts_.major) && is_numerical(parts_.minor)
+			&& is_numerical(parts_.patch);
 
 		if (is_dash()) {
 			advance(1);
