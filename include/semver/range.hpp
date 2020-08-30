@@ -522,6 +522,7 @@ private:
 		start();
 
 		if (is_eof(token_)) {
+			ast_push(std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
 			good_ = true;
 			return;
 		}
