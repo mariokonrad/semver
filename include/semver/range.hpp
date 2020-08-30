@@ -609,6 +609,7 @@ private:
 				continue;
 			}
 			if (is_partial(token_)) {
+				// TODO: if the version contains wildcards, handle it as range
 				ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
 				advance();
 				continue;
