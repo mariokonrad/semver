@@ -126,6 +126,12 @@ public:
 	node(node &&) = default;
 	node & operator=(node &&) = default;
 
+	static node create_and(node && first, node && second)
+	{
+		return create_and(std::make_unique<node>(std::move(first)),
+			std::make_unique<node>(std::move(second)));
+	}
+
 	static node create_and(std::unique_ptr<node> first, std::unique_ptr<node> second)
 	{
 		std::vector<std::unique_ptr<node>> v;
@@ -138,6 +144,12 @@ public:
 	static node create_and(std::vector<std::unique_ptr<node>> && v)
 	{
 		return node(type::op_and, std::move(v));
+	}
+
+	static node create_or(node && first, node && second)
+	{
+		return create_or(std::make_unique<node>(std::move(first)),
+			std::make_unique<node>(std::move(second)));
 	}
 
 	static node create_or(std::unique_ptr<node> first, std::unique_ptr<node> second)
@@ -507,6 +519,7 @@ private:
 	std::unique_ptr<node> & ast_back() { return ast_.back(); }
 	const std::unique_ptr<node> & ast_back() const { return ast_.back(); }
 
+	void ast_push(node && n) { ast_push(std::make_unique<node>(std::move(n))); }
 	void ast_push(std::unique_ptr<node> n) { ast_.push_back(std::move(n)); }
 
 	std::unique_ptr<node> ast_pop()
@@ -522,7 +535,7 @@ private:
 		start();
 
 		if (is_eof(token_)) {
-			ast_push(std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
+			ast_push(node::create_ge(lower_bound(token_text_)));
 			good_ = true;
 			return;
 		}
@@ -535,7 +548,7 @@ private:
 			assert(ast_.size() > 1);
 			auto b = ast_pop();
 			auto a = ast_pop();
-			ast_push(std::make_unique<node>(node::create_or(std::move(a), std::move(b))));
+			ast_push(node::create_or(std::move(a), std::move(b)));
 		}
 
 		good_ = !is_error(token_);
@@ -556,18 +569,14 @@ private:
 												  : upper_bound(token_text_);
 
 				if (l == u) {
-					ast_push(std::make_unique<node>(node::create_eq(l)));
+					ast_push(node::create_eq(l));
 				} else {
 					if (l > u)
 						std::swap(l, u);
 					if (token_text_.full_version) {
-						ast_push(
-							std::make_unique<node>(node::create_and(std::make_unique<node>(node::create_ge(l)),
-								std::make_unique<node>(node::create_le(u)))));
+						ast_push(node::create_and(node::create_ge(l), node::create_le(u)));
 					} else {
-						ast_push(
-							std::make_unique<node>(node::create_and(std::make_unique<node>(node::create_ge(l)),
-								std::make_unique<node>(node::create_lt(u)))));
+						ast_push(node::create_and(node::create_ge(l), node::create_lt(u)));
 					}
 				}
 				advance();
@@ -585,13 +594,11 @@ private:
 				auto l = lower_bound(token_text_);
 				auto u = upper_bound(token_text_);
 				if (l == u) {
-					ast_push(std::make_unique<node>(node::create_eq(l)));
+					ast_push(node::create_eq(l));
 				} else if (u == semver::max()) {
-					ast_push(std::make_unique<node>(node::create_ge(l)));
+					ast_push(node::create_ge(l));
 				} else {
-					ast_push(std::make_unique<node>(
-						node::create_and(std::make_unique<node>(node::create_ge(l)),
-							std::make_unique<node>(node::create_lt(u)))));
+					ast_push(node::create_and(node::create_ge(l), node::create_lt(u)));
 				}
 				advance();
 				continue;
@@ -599,33 +606,31 @@ private:
 			if (is_op(token_)) {
 				// TODO: refactoring
 				if (token_text_.op == "<")
-					ast_push(std::make_unique<node>(node::create_lt(lower_bound(token_text_))));
+					ast_push(node::create_lt(lower_bound(token_text_)));
 				if (token_text_.op == "<=")
-					ast_push(std::make_unique<node>(node::create_le(lower_bound(token_text_))));
+					ast_push(node::create_le(lower_bound(token_text_)));
 				if (token_text_.op == ">")
-					ast_push(std::make_unique<node>(node::create_gt(lower_bound(token_text_))));
+					ast_push(node::create_gt(lower_bound(token_text_)));
 				if (token_text_.op == ">=")
-					ast_push(std::make_unique<node>(node::create_ge(lower_bound(token_text_))));
+					ast_push(node::create_ge(lower_bound(token_text_)));
 				if (token_text_.op == "=")
-					ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+					ast_push(node::create_eq(lower_bound(token_text_)));
 				advance();
 				continue;
 			}
 			if (is_partial(token_)) {
 				// if the version contains wildcards, handle it as range
 				if (token_text_.full_version) {
-					ast_push(std::make_unique<node>(node::create_eq(lower_bound(token_text_))));
+					ast_push(node::create_eq(lower_bound(token_text_)));
 				} else {
 					auto l = lower_bound(token_text_);
 					auto u = upper_bound(token_text_);
 					if (l == u) {
-						ast_push(std::make_unique<node>(node::create_eq(l)));
+						ast_push(node::create_eq(l));
 					} else if (u == semver::max()) {
-						ast_push(std::make_unique<node>(node::create_ge(l)));
+						ast_push(node::create_ge(l));
 					} else {
-						ast_push(std::make_unique<node>(
-							node::create_and(std::make_unique<node>(node::create_ge(l)),
-								std::make_unique<node>(node::create_lt(u)))));
+						ast_push(node::create_and(node::create_ge(l), node::create_lt(u)));
 					}
 				}
 				advance();
@@ -641,7 +646,7 @@ private:
 			std::vector<std::unique_ptr<node>> v;
 			for (; partial_count > 0 && ast_back()->is_leaf(); --partial_count)
 				v.push_back(std::move(ast_pop()));
-			ast_push(std::make_unique<node>(node::create_and(std::move(v))));
+			ast_push(node::create_and(std::move(v)));
 		}
 	}
 
