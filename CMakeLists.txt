@@ -35,6 +35,8 @@ target_sources(${PROJECT_NAME}
 		include/semver/semver.hpp
 		include/semver/range.hpp
 		include/semver/detail/range_lexer.hpp
+		include/semver/detail/range_node.hpp
+		include/semver/detail/semver_parser.hpp
 	)
 target_include_directories(${PROJECT_NAME}
 	INTERFACE
@@ -69,6 +71,7 @@ target_sources(testrunner
 		tests/test_semver_construction_loose.cpp
 		tests/test_semver_comparison.cpp
 		tests/test_semver_string.cpp
+		tests/test_semver_parser.cpp
 		tests/test_range_construction.cpp
 		tests/test_range_comparison.cpp
 		tests/test_range_intersection.cpp

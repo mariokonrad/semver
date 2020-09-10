@@ -1,6 +1,7 @@
 #ifndef SEMVER_DETAIL_RANGE_LEXER_HPP
 #define SEMVER_DETAIL_RANGE_LEXER_HPP
 
+#include <semver/semver.hpp>
 #include <algorithm>
 #include <string>
 #include <cassert>
@@ -336,6 +337,50 @@ private:
 		error();
 	}
 };
+
+inline semver lower_bound(const lexer::parts & p)
+{
+	// TODO: to be optimized, re-parse semver? meh...
+
+	if (p.major.empty() || p.major == "*")
+		return semver::min();
+
+	if (p.minor.empty() || p.minor == "*")
+		return semver(p.major + ".0.0");
+
+	if (p.patch.empty() || p.patch == "*")
+		return semver(p.major + "." + p.minor + ".0");
+
+	return semver(p.token.substr(
+		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
+}
+
+inline semver upper_bound(const lexer::parts & p)
+{
+	// TODO: to be optimized, re-parse semver? meh...
+
+	if (p.major.empty() || p.major == "*")
+		return semver::max();
+
+	if (p.op == "^" && p.major != "0")
+		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+
+	if (p.minor.empty() || p.minor == "*")
+		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+
+	if (p.op == "^" && p.minor != "0")
+		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+
+	if (p.patch.empty() || p.patch == "*" || p.op == "~")
+		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+
+	if (p.op == "^" && p.patch != "0")
+		return semver(
+			p.major + "." + p.minor + "." + std::to_string(std::stoul(p.patch) + 1u) + "-0");
+
+	return semver(p.token.substr(
+		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
+}
 }
 }
 }

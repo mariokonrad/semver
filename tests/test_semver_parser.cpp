@@ -5,7 +5,7 @@ namespace {
 
 using ::semver::v1::detail::semver_parser;
 
-class test_semver_parsre : public ::testing::Test {};
+class test_semver_parser : public ::testing::Test {};
 
 #define EXPECT_SV(s, e) EXPECT_EQ(std::string(s), (e))
 
