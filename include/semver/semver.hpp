@@ -46,6 +46,31 @@ public:
 		}
 	}
 
+	semver(number_type major, number_type minor, number_type patch)
+		: major_(major)
+		, minor_(minor)
+		, patch_(patch)
+		, good_(true)
+	{
+	}
+
+	semver(
+		number_type major, number_type minor, number_type patch, const std::string & prerelease)
+		: major_(major)
+		, minor_(minor)
+		, patch_(patch)
+		, prerelease_(prerelease)
+		, good_(prerelease_.empty())
+	{
+		last_ = prerelease_.data() + prerelease_.size();
+		cursor_ = prerelease_.data();
+
+		if (!good_) {
+			parse_pre_release();
+			good_ = (cursor_ == last_) && !error_;
+		}
+	}
+
 	number_type major() const noexcept { return major_; }
 	number_type minor() const noexcept { return minor_; }
 	number_type patch() const noexcept { return patch_; }
@@ -104,14 +129,6 @@ private:
 
 	std::string data_;
 	bool good_ = false;
-
-	semver(number_type major, number_type minor, number_type patch)
-		: major_(major)
-		, minor_(minor)
-		, patch_(patch)
-		, good_(true)
-	{
-	}
 
 	static std::string token(const char_type * start, const char_type * end) noexcept
 	{
