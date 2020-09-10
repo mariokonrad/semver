@@ -416,5 +416,87 @@ TEST_F(test_range_bounds, node_bounds_gt)
 	EXPECT_EQ(expected_min, v_min);
 	EXPECT_EQ(expected_max, v_max);
 }
+
+TEST_F(test_range_bounds, node_bounds_eq_prerelease)
+{
+	const auto n = node::create_eq(semver("1.2.3-0"));
+	const auto expected_min = semver("1.2.3-0");
+	const auto expected_max = expected_min;
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(v_min, v_max);
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_lt_prerelease)
+{
+	const auto n = node::create_lt(semver("1.2.3-0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver("1.2.2");
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_le_prerelease)
+{
+	const auto n = node::create_le(semver("1.2.3-0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver("1.2.3-0");
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_ge_prerelease)
+{
+	const auto n = node::create_ge(semver("1.2.3-0"));
+	const auto expected_min = semver("1.2.3-0");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_gt_prerelease)
+{
+	const auto n = node::create_gt(semver("1.2.3-0"));
+	const auto expected_min = semver("1.2.3");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
 }
 

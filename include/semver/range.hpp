@@ -328,30 +328,42 @@ private:
 inline semver lower_bound(const node & n)
 {
 	switch (n.get_type()) {
-		case node::type::op_eq: // TODO
-		case node::type::op_lt: // TODO
-		case node::type::op_le: // TODO
-		case node::type::op_gt: // TODO
-		case node::type::op_ge: // TODO
-		case node::type::op_and: break;
-		case node::type::op_or: break;
+		case node::type::op_eq:
+			return n.get_version();
+		case node::type::op_lt:
+			return semver::min(); // TODO
+		case node::type::op_le:
+			return semver::min();
+		case node::type::op_gt:
+			return {}; // TODO
+		case node::type::op_ge:
+			return n.get_version();
+		case node::type::op_and:
+			break;
+		case node::type::op_or:
+			break;
 	}
-
 	return {};
 }
 
 inline semver upper_bound(const node & n)
 {
 	switch (n.get_type()) {
-		case node::type::op_eq: // TODO
-		case node::type::op_lt: // TODO
-		case node::type::op_le: // TODO
-		case node::type::op_gt: // TODO
-		case node::type::op_ge: // TODO
-		case node::type::op_and: break;
-		case node::type::op_or: break;
+		case node::type::op_eq:
+			return n.get_version();
+		case node::type::op_lt:
+			return {}; // TODO
+		case node::type::op_le:
+			return n.get_version();
+		case node::type::op_gt:
+			return semver::max(); // TODO
+		case node::type::op_ge:
+			return semver::max();
+		case node::type::op_and:
+			break;
+		case node::type::op_or:
+			break;
 	}
-
 	return {};
 }
 
