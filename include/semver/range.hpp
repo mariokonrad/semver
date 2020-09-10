@@ -325,6 +325,36 @@ private:
 	}
 };
 
+inline semver lower_bound(const node & n)
+{
+	switch (n.get_type()) {
+		case node::type::op_eq: // TODO
+		case node::type::op_lt: // TODO
+		case node::type::op_le: // TODO
+		case node::type::op_gt: // TODO
+		case node::type::op_ge: // TODO
+		case node::type::op_and: break;
+		case node::type::op_or: break;
+	}
+
+	return {};
+}
+
+inline semver upper_bound(const node & n)
+{
+	switch (n.get_type()) {
+		case node::type::op_eq: // TODO
+		case node::type::op_lt: // TODO
+		case node::type::op_le: // TODO
+		case node::type::op_gt: // TODO
+		case node::type::op_ge: // TODO
+		case node::type::op_and: break;
+		case node::type::op_or: break;
+	}
+
+	return {};
+}
+
 inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, node & n)
 {
 	assert(n.get_type() == node::type::op_or);
@@ -396,6 +426,18 @@ public:
 
 	semver max() const noexcept
 	{
+		// TODO: idea for algorithm:
+		//
+		//   1. collect all min/max of 'or' nodes -> v_min, v_max
+		//
+		//   2. collect min/max from all 'and' nodes using (min|max)_satisfying
+		//      for all 'and':
+		//      - min = min_satisfying({local min})
+		//      - max = max_satisfying({local max})
+		//
+		//   3. determine min/max using (min|max)_satisfying from v_min/v_max
+		//
+
 		// TODO: implementation
 		return {""};
 	}

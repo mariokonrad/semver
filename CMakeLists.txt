@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
+
+# undocumented, invisible by `--help-variable-list`
+# mentioned here: https://www.reddit.com/r/cmake/comments/in73w8/build_out_of_source_automatically/g47dhdm/
+#set(CMAKE_DISABLE_SOURCE_CHANGES ON)
+#set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
 project(semver)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
