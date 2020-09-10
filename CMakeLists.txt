@@ -36,6 +36,7 @@ target_sources(${PROJECT_NAME}
 		include/semver/range.hpp
 		include/semver/detail/range_lexer.hpp
 		include/semver/detail/range_node.hpp
+		include/semver/detail/range_parser.hpp
 		include/semver/detail/semver_parser.hpp
 	)
 target_include_directories(${PROJECT_NAME}

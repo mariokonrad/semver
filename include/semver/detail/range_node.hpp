@@ -1,6 +1,7 @@
 #ifndef SEMVER_DETAIL_RANGE_NODE_HPP
 #define SEMVER_DETAIL_RANGE_NODE_HPP
 
+#include <semver/semver.hpp>
 #include <optional>
 #include <ostream>
 #include <memory>
