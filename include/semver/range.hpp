@@ -200,7 +200,7 @@ public:
 
 	bool is_leaf() const noexcept { return nodes_.empty(); }
 	type get_type() const { return type_; }
-	semver get_version() const { return *version_; }
+	const semver & get_version() const { return *version_; }
 
 	template <typename Visitor> void visit_postfix(Visitor v) const
 	{
@@ -325,17 +325,75 @@ private:
 	}
 };
 
+inline semver successor(const semver & v)
+{
+	if (!v.prerelease().empty())
+		return semver(v.major(), v.minor(), v.patch());
+
+	constexpr const auto max = std::numeric_limits<semver::number_type>::max();
+	auto major = v.major();
+	auto minor = v.minor();
+	auto patch = v.patch();
+
+	// bump-up version: version+epsilon
+	if (patch == max) {
+		patch = 0;
+		if (minor == max) {
+			minor = 0;
+			if (major == max) {
+				return {}; // nothing valid possible
+			} else {
+				++major;
+			}
+		} else {
+			++minor;
+		}
+	} else {
+		++patch;
+	}
+	return semver(major, minor, patch);
+}
+
+inline semver predecessor(const semver & v)
+{
+	if (v.prerelease().empty())
+		return semver(v.major(), v.minor(), v.patch(), "0");
+
+	constexpr const auto max = std::numeric_limits<semver::number_type>::max();
+	auto major = v.major();
+	auto minor = v.minor();
+	auto patch = v.patch();
+
+	// bump-down version: version-epsilon
+	if (patch == 0) {
+		patch = max;
+		if (minor == 0) {
+			minor = max;
+			if (major == 0) {
+				return {}; // nothing valid possible
+			} else {
+				--major;
+			}
+		} else {
+			--minor;
+		}
+	} else {
+		--patch;
+	}
+	return semver(major, minor, patch);
+}
+
 inline semver lower_bound(const node & n)
 {
 	switch (n.get_type()) {
 		case node::type::op_eq:
 			return n.get_version();
 		case node::type::op_lt:
-			return semver::min(); // TODO
+			return semver::min();
 		case node::type::op_le:
 			return semver::min();
 		case node::type::op_gt:
-			return {}; // TODO
+			return successor(n.get_version());
 		case node::type::op_ge:
 			return n.get_version();
 		case node::type::op_and:
@@ -352,11 +410,11 @@ inline semver upper_bound(const node & n)
 		case node::type::op_eq:
 			return n.get_version();
 		case node::type::op_lt:
-			return {}; // TODO
+			return predecessor(n.get_version());
 		case node::type::op_le:
 			return n.get_version();
 		case node::type::op_gt:
-			return semver::max(); // TODO
+			return semver::max();
 		case node::type::op_ge:
 			return semver::max();
 		case node::type::op_and:
