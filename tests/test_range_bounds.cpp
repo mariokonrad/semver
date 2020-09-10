@@ -335,7 +335,7 @@ TEST_F(test_range_bounds, node_bounds_non_leaf)
 	EXPECT_FALSE(upper_bound(node_or).ok());
 }
 
-TEST_F(test_range_bounds, node_bounds_eq)
+TEST_F(test_range_bounds, node_bounds_eq_1)
 {
 	const auto n = node::create_eq(semver("1.2.3"));
 	const auto expected_min = semver("1.2.3");
@@ -353,7 +353,25 @@ TEST_F(test_range_bounds, node_bounds_eq)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_lt)
+TEST_F(test_range_bounds, node_bounds_eq_2)
+{
+	const auto n = node::create_eq(semver("2.0.0"));
+	const auto expected_min = semver("2.0.0");
+	const auto expected_max = expected_min;
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(v_min, v_max);
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_lt_1)
 {
 	const auto n = node::create_lt(semver("1.2.3"));
 	const auto expected_min = semver::min();
@@ -369,7 +387,23 @@ TEST_F(test_range_bounds, node_bounds_lt)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_le)
+TEST_F(test_range_bounds, node_bounds_lt_2)
+{
+	const auto n = node::create_lt(semver("2.0.0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver("2.0.0-0");
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_le_1)
 {
 	const auto n = node::create_le(semver("1.2.3"));
 	const auto expected_min = semver::min();
@@ -385,7 +419,23 @@ TEST_F(test_range_bounds, node_bounds_le)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_ge)
+TEST_F(test_range_bounds, node_bounds_le_2)
+{
+	const auto n = node::create_le(semver("2.0.0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver("2.0.0");
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_ge_1)
 {
 	const auto n = node::create_ge(semver("1.2.3"));
 	const auto expected_min = semver("1.2.3");
@@ -401,7 +451,23 @@ TEST_F(test_range_bounds, node_bounds_ge)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_gt)
+TEST_F(test_range_bounds, node_bounds_ge_2)
+{
+	const auto n = node::create_ge(semver("2.0.0"));
+	const auto expected_min = semver("2.0.0");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_gt_1)
 {
 	const auto n = node::create_gt(semver("1.2.3"));
 	const auto expected_min = semver("1.2.4");
@@ -417,7 +483,23 @@ TEST_F(test_range_bounds, node_bounds_gt)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_eq_prerelease)
+TEST_F(test_range_bounds, node_bounds_gt_2)
+{
+	const auto n = node::create_gt(semver("2.0.0"));
+	const auto expected_min = semver("2.0.1");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_eq_prerelease_1)
 {
 	const auto n = node::create_eq(semver("1.2.3-0"));
 	const auto expected_min = semver("1.2.3-0");
@@ -435,7 +517,25 @@ TEST_F(test_range_bounds, node_bounds_eq_prerelease)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_lt_prerelease)
+TEST_F(test_range_bounds, node_bounds_eq_prerelease_2)
+{
+	const auto n = node::create_eq(semver("2.0.0-0"));
+	const auto expected_min = semver("2.0.0-0");
+	const auto expected_max = expected_min;
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(v_min, v_max);
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_lt_prerelease_1)
 {
 	const auto n = node::create_lt(semver("1.2.3-0"));
 	const auto expected_min = semver::min();
@@ -451,7 +551,24 @@ TEST_F(test_range_bounds, node_bounds_lt_prerelease)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_le_prerelease)
+TEST_F(test_range_bounds, node_bounds_lt_prerelease_2)
+{
+	const auto n = node::create_lt(semver("2.0.0-0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver(1, std::numeric_limits<semver::number_type>::max(),
+		std::numeric_limits<semver::number_type>::max());
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_le_prerelease_1)
 {
 	const auto n = node::create_le(semver("1.2.3-0"));
 	const auto expected_min = semver::min();
@@ -467,7 +584,23 @@ TEST_F(test_range_bounds, node_bounds_le_prerelease)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_ge_prerelease)
+TEST_F(test_range_bounds, node_bounds_le_prerelease_2)
+{
+	const auto n = node::create_le(semver("2.0.0-0"));
+	const auto expected_min = semver::min();
+	const auto expected_max = semver("2.0.0-0");
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_ge_prerelease_1)
 {
 	const auto n = node::create_ge(semver("1.2.3-0"));
 	const auto expected_min = semver("1.2.3-0");
@@ -483,10 +616,42 @@ TEST_F(test_range_bounds, node_bounds_ge_prerelease)
 	EXPECT_EQ(expected_max, v_max);
 }
 
-TEST_F(test_range_bounds, node_bounds_gt_prerelease)
+TEST_F(test_range_bounds, node_bounds_ge_prerelease_2)
+{
+	const auto n = node::create_ge(semver("2.0.0-0"));
+	const auto expected_min = semver("2.0.0-0");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_gt_prerelease_1)
 {
 	const auto n = node::create_gt(semver("1.2.3-0"));
 	const auto expected_min = semver("1.2.3");
+	const auto expected_max = semver::max();
+
+	const auto v_min = lower_bound(n);
+	const auto v_max = upper_bound(n);
+
+	EXPECT_TRUE(v_min.ok());
+	EXPECT_TRUE(v_max.ok());
+
+	EXPECT_EQ(expected_min, v_min);
+	EXPECT_EQ(expected_max, v_max);
+}
+
+TEST_F(test_range_bounds, node_bounds_gt_prerelease_2)
+{
+	const auto n = node::create_gt(semver("2.0.0-0"));
+	const auto expected_min = semver("2.0.0");
 	const auto expected_max = semver::max();
 
 	const auto v_min = lower_bound(n);

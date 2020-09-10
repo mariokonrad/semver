@@ -74,8 +74,8 @@ public:
 	number_type major() const noexcept { return major_; }
 	number_type minor() const noexcept { return minor_; }
 	number_type patch() const noexcept { return patch_; }
-	std::string build() const noexcept { return build_; }
-	std::string prerelease() const noexcept { return prerelease_; }
+	const std::string & build() const noexcept { return build_; }
+	const std::string & prerelease() const noexcept { return prerelease_; }
 
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
