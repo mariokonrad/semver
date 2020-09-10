@@ -83,7 +83,7 @@ inline semver lower_bound(const lexer::parts & p)
 		return semver(p.major + "." + p.minor + ".0");
 
 	return semver(p.token.substr(
-		p.op.size(), p.token.size() - p.op.size() - p.build.size())); // cut op and build
+		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
 }
 
 inline semver upper_bound(const lexer::parts & p)
@@ -110,7 +110,7 @@ inline semver upper_bound(const lexer::parts & p)
 			p.major + "." + p.minor + "." + std::to_string(std::stoul(p.patch) + 1u) + "-0");
 
 	return semver(p.token.substr(
-		p.op.size(), p.token.size() - p.op.size() - p.build.size())); // cut op and build
+		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
 }
 
 class node final

@@ -1,9 +1,7 @@
 #ifndef SERMVER_SEMVER_HPP
 #define SERMVER_SEMVER_HPP
 
-#include <algorithm>
-#include <charconv>
-#include <functional>
+#include "detail/semver_parser.hpp"
 #include <limits>
 #include <ostream>
 #include <string>
@@ -17,7 +15,7 @@ inline namespace v1
 class semver final
 {
 public:
-	using number_type = unsigned long;
+	using number_type = detail::semver_parser::number_type;
 
 	~semver() = default;
 
@@ -30,19 +28,15 @@ public:
 	semver() = default;
 
 	semver(const std::string & s, bool loose = false)
-		: data_(s)
 	{
-		if (loose) {
-			data_.erase(std::remove_if(begin(data_), end(data_), ::isspace), end(data_));
-			data_.erase(begin(data_), std::find_if(begin(data_), end(data_), ::isdigit));
-		}
-
-		last_ = data_.data() + data_.size();
-		cursor_ = data_.data();
-
-		if (!data_.empty()) {
-			parse_valid_semver();
-			good_ = (cursor_ == last_) && !error_;
+		const auto p = detail::semver_parser(s, loose);
+		good_ = p.ok();
+		if (good_) {
+			major_ = p.major();
+			minor_ = p.minor();
+			patch_ = p.patch();
+			build_ = p.build();
+			prerelease_ = p.prerelease();
 		}
 	}
 
@@ -62,13 +56,8 @@ public:
 		, prerelease_(prerelease)
 		, good_(prerelease_.empty())
 	{
-		last_ = prerelease_.data() + prerelease_.size();
-		cursor_ = prerelease_.data();
-
-		if (!good_) {
-			parse_pre_release();
-			good_ = (cursor_ == last_) && !error_;
-		}
+		if (!good_)
+			good_ = detail::semver_parser(major_, minor_, patch_, prerelease_).ok();
 	}
 
 	number_type major() const noexcept { return major_; }
@@ -84,9 +73,32 @@ public:
 	{
 		if (!ok())
 			return "<invalid>";
+		return render();
+	}
 
-		auto s = std::to_string(major()) + '.' + std::to_string(minor()) + '.'
-			+ std::to_string(patch());
+	static semver invalid() noexcept { return semver(); }
+
+	static semver min() noexcept { return semver(0u, 0u, 0u); }
+
+	static semver max() noexcept
+	{
+		return semver(std::numeric_limits<number_type>::max(),
+			std::numeric_limits<number_type>::max(), std::numeric_limits<number_type>::max());
+	}
+
+private:
+	number_type major_ = {};
+	number_type minor_ = {};
+	number_type patch_ = {};
+	std::string prerelease_ = {};
+	std::string build_ = {};
+
+	bool good_ = false;
+
+	std::string render() const
+	{
+		using std::to_string;
+		auto s = to_string(major()) + '.' + to_string(minor()) + '.' + to_string(patch());
 		const auto pr = prerelease();
 		const auto b = build();
 		if (!pr.empty() || !b.empty()) {
@@ -101,195 +113,6 @@ public:
 			}
 		}
 		return s;
-	}
-
-	static semver invalid() noexcept { return semver(); }
-
-	static semver min() noexcept { return semver(0u, 0u, 0u); }
-
-	static semver max() noexcept
-	{
-		return semver(std::numeric_limits<number_type>::max(),
-			std::numeric_limits<number_type>::max(), std::numeric_limits<number_type>::max());
-	}
-
-private:
-	using char_type = std::string::value_type;
-
-	const char_type * last_ = {};
-	const char_type * start_ = {};
-	const char_type * cursor_ = {};
-	const char_type * error_ = nullptr;
-
-	number_type major_ = {};
-	number_type minor_ = {};
-	number_type patch_ = {};
-	std::string prerelease_ = {};
-	std::string build_ = {};
-
-	std::string data_;
-	bool good_ = false;
-
-	static std::string token(const char_type * start, const char_type * end) noexcept
-	{
-		return std::string(start, end);
-	}
-
-	void parse_valid_semver() noexcept
-	{
-		parse_version_core();
-		if (is_dash(cursor_)) {
-			advance(1);
-			parse_pre_release();
-			if (is_plus(cursor_)) {
-				advance(1);
-				parse_build();
-			}
-			return;
-		}
-		if (is_plus(cursor_)) {
-			advance(1);
-			parse_build();
-			return;
-		}
-	}
-
-	void advance(int n) noexcept { cursor_ += std::min(n, static_cast<int>(last_ - cursor_)); }
-
-	void error() noexcept { error_ = cursor_; }
-
-	void parse_version_core() noexcept
-	{
-		parse_major();
-		parse_dot();
-		parse_minor();
-		parse_dot();
-		parse_patch();
-	}
-
-	void parse_major() noexcept
-	{
-		start_ = cursor_;
-		parse_numeric_identifier();
-		std::from_chars(start_, cursor_, major_);
-	}
-
-	void parse_minor() noexcept
-	{
-		start_ = cursor_;
-		parse_numeric_identifier();
-		std::from_chars(start_, cursor_, minor_);
-	}
-
-	void parse_patch() noexcept
-	{
-		start_ = cursor_;
-		parse_numeric_identifier();
-		std::from_chars(start_, cursor_, patch_);
-	}
-
-	void parse_dot() noexcept
-	{
-		if (is_dot(cursor_)) {
-			advance(1);
-			return;
-		}
-		error();
-	}
-
-	void parse_build() noexcept
-	{
-		start_ = cursor_;
-		parse_dot_separated_identifier();
-		build_ = token(start_, cursor_);
-	}
-
-	void parse_pre_release() noexcept
-	{
-		start_ = cursor_;
-		parse_dot_separated_identifier();
-		prerelease_ = token(start_, cursor_);
-	}
-
-	void parse_dot_separated_identifier() noexcept
-	{
-		parse_identifier();
-		while (is_dot(cursor_)) {
-			parse_dot();
-			parse_identifier();
-		}
-	}
-
-	void parse_identifier() noexcept
-	{
-		if (!(is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))) {
-			error();
-			return;
-		}
-		while (is_letter(cursor_) || is_digit(cursor_) || is_dash(cursor_))
-			advance(1);
-	}
-
-	void parse_numeric_identifier() noexcept
-	{
-		if (is_zero(cursor_)) {
-			advance(1);
-			return;
-		}
-		if (is_positive_digit(cursor_)) {
-			parse_positive_digit();
-			if (is_digit(cursor_))
-				parse_digits();
-			return;
-		}
-		error();
-	}
-
-	void parse_positive_digit() noexcept
-	{
-		if (is_positive_digit(cursor_)) {
-			advance(1);
-			return;
-		}
-		error();
-	}
-
-	void parse_digits() noexcept
-	{
-		if (!is_digit(cursor_)) {
-			error();
-			return;
-		}
-		while (is_digit(cursor_))
-			advance(1);
-	}
-
-	// low level primitives, must check for eof
-
-	bool peek(char_type c, const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (*p == c);
-	}
-
-	bool is_eof(const char_type * p) const noexcept { return (p >= last_) || (*p == '\x00'); }
-	bool is_dot(const char_type * p) const noexcept { return peek('.', p); }
-	bool is_plus(const char_type * p) const noexcept { return peek('+', p); }
-	bool is_dash(const char_type * p) const noexcept { return peek('-', p); }
-	bool is_zero(const char_type * p) const noexcept { return peek('0', p); }
-
-	bool is_positive_digit(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && ((*p >= '1') && (*p <= '9'));
-	}
-
-	bool is_digit(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && ((*p >= '0') && (*p <= '9'));
-	}
-
-	bool is_letter(const char_type * p) const noexcept
-	{
-		return !is_eof(p) && (((*p >= 'A') && (*p <= 'Z')) || ((*p >= 'a') && (*p <= 'z')));
 	}
 };
 
