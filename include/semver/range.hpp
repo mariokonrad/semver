@@ -39,26 +39,47 @@ public:
 
 	semver max() const noexcept
 	{
-		// TODO: idea for algorithm:
+		// Algorithm:
 		//
 		//   1. collect all min/max of 'or' nodes -> v_min, v_max
 		//
-		//   2. collect min/max from all 'and' nodes using (min|max)_satisfying
-		//      for all 'and':
+		//   2. collect min/max from all 'and' nodes using (min|max)_satisfying, for all 'and':
 		//      - min = min_satisfying({local min})
 		//      - max = max_satisfying({local max})
 		//
-		//   3. determine min/max using (min|max)_satisfying from v_min/v_max
+		//   3. determine min/max using (min|max)_satisfying from v_min/v_max and min/max from step 2
 		//
 
-		// TODO: implementation
-		return {""};
+		std::vector<semver> v;
+		for (const auto & n : nodes_) {
+			if (n->is_leaf()) {
+				v.emplace_back(upper_bound(*n));
+			} else {
+				std::vector<semver> local;
+				for (const auto & m : *n)
+					local.emplace_back(upper_bound(*m));
+				v.push_back(max_satisfying(local));
+			}
+		}
+
+		return max_satisfying(v);
 	}
 
 	semver min() const noexcept
 	{
-		// TODO: implementation
-		return {""};
+		std::vector<semver> v;
+		for (const auto & n : nodes_) {
+			if (n->is_leaf()) {
+				v.emplace_back(lower_bound(*n));
+			} else {
+				std::vector<semver> local;
+				for (const auto & m : *n)
+					local.emplace_back(lower_bound(*m));
+				v.push_back(min_satisfying(local));
+			}
+		}
+
+		return min_satisfying(v);
 	}
 
 	bool satisfies(const semver & v) const noexcept

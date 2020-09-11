@@ -206,22 +206,41 @@ TEST_F(test_range_query, max)
 {
 	EXPECT_EQ(semver("2.0.0"), range("2.0.0").max());
 	EXPECT_EQ(semver("2.0.0"), range("<=2.0.0").max());
-	EXPECT_EQ(semver("1.99999.99999"), range("<2.0.0").max());
+	EXPECT_EQ(semver("2.0.0-0"), range("<2.0.0").max());
 	EXPECT_EQ(semver("3.0.0"), range("<2.0.0 || 3.0.0").max());
-	EXPECT_EQ(semver("99999.99999.99999"), range(">2.0.0").max());
-	EXPECT_EQ(semver("99999.99999.99999"), range(">=2.0.0").max());
+	EXPECT_EQ(semver::max(), range(">2.0.0").max());
+	EXPECT_EQ(semver::max(), range(">=2.0.0").max());
 	EXPECT_EQ(semver("2.0.0"), range(">1.2.3 <=2.0.0").max());
+}
+
+TEST_F(test_range_query, max_prerelease)
+{
+	EXPECT_EQ(semver("2.0.0-0"), range("2.0.0-0").max());
+	EXPECT_EQ(semver("2.0.0-0"), range("<=2.0.0-0").max());
+	EXPECT_EQ(semver::max(), range(">2.0.0-0").max());
+	EXPECT_EQ(semver::max(), range(">=2.0.0-0").max());
+	EXPECT_EQ(semver("2.0.0-0"), range(">1.2.3 <=2.0.0-0").max());
 }
 
 TEST_F(test_range_query, min)
 {
 	EXPECT_EQ(semver("2.0.0"), range("2.0.0").min());
-	EXPECT_EQ(semver("0.0.0"), range("<=2.0.0").min());
-	EXPECT_EQ(semver("0.0.0"), range("<2.0.0").min());
-	EXPECT_EQ(semver("0.0.0"), range("<2.0.0 || 3.0.0").min());
+	EXPECT_EQ(semver::min(), range("<=2.0.0").min());
+	EXPECT_EQ(semver::min(), range("<2.0.0").min());
+	EXPECT_EQ(semver::min(), range("<2.0.0 || 3.0.0").min());
 	EXPECT_EQ(semver("2.0.1"), range(">2.0.0").min());
 	EXPECT_EQ(semver("2.0.0"), range(">=2.0.0").min());
 	EXPECT_EQ(semver("1.2.3"), range(">=1.2.3 <2.0.0").min());
+}
+
+TEST_F(test_range_query, min_prerelease)
+{
+	EXPECT_EQ(semver("2.0.0-0"), range("2.0.0-0").min());
+	EXPECT_EQ(semver::min(), range("<=2.0.0-0").min());
+	EXPECT_EQ(semver("2.0.0"), range(">2.0.0-0").min());
+	EXPECT_EQ(semver("2.0.0-0"), range(">=2.0.0-0").min());
+	EXPECT_EQ(semver("1.2.4"), range(">1.2.3 <=2.0.0-0").min());
+	EXPECT_EQ(semver("1.2.3"), range(">1.2.3-0 <=2.0.0").min());
 }
 
 TEST_F(test_range_query, max_satisfying)

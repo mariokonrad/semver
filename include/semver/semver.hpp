@@ -69,12 +69,7 @@ public:
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
 
-	std::string str() const
-	{
-		if (!ok())
-			return "<invalid>";
-		return render();
-	}
+	std::string str() const { return (!ok()) ? "<invalid>" : render(); }
 
 	static semver invalid() noexcept { return semver(); }
 

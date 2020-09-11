@@ -234,6 +234,16 @@ public:
 		return false;
 	}
 
+	friend std::vector<std::unique_ptr<node>>::const_iterator begin(const node & n)
+	{
+		return begin(n.nodes_);
+	}
+
+	friend std::vector<std::unique_ptr<node>>::const_iterator end(const node & n)
+	{
+		return cend(n.nodes_);
+	}
+
 private:
 	type type_;
 	std::optional<semver> version_;
