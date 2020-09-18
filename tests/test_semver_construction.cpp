@@ -48,5 +48,64 @@ TEST_F(test_semver_construction, numerical_invalid_prerelease)
 
 	EXPECT_FALSE(v.ok());
 }
+
+TEST_F(test_semver_construction, numerical_empty_prerelease_empty_build)
+{
+	const auto v = semver(1, 2, 3, "", "");
+
+	EXPECT_TRUE(v.ok());
+	EXPECT_EQ(1, v.major());
+	EXPECT_EQ(2, v.minor());
+	EXPECT_EQ(3, v.patch());
+	EXPECT_STREQ("", v.prerelease().c_str());
+	EXPECT_STREQ("", v.build().c_str());
+	EXPECT_STREQ("1.2.3", to_string(v).c_str());
+}
+
+TEST_F(test_semver_construction, numerical_prerelease_empty_build)
+{
+	const auto v = semver(1, 2, 3, "beta.2-1", "");
+
+	EXPECT_TRUE(v.ok());
+	EXPECT_EQ(1, v.major());
+	EXPECT_EQ(2, v.minor());
+	EXPECT_EQ(3, v.patch());
+	EXPECT_STREQ("beta.2-1", v.prerelease().c_str());
+	EXPECT_STREQ("", v.build().c_str());
+	EXPECT_STREQ("1.2.3-beta.2-1", to_string(v).c_str());
+}
+
+TEST_F(test_semver_construction, numerical_empty_prerelease_valid_build)
+{
+	const auto v = semver(1, 2, 3, "", "foo.bar-123");
+
+	EXPECT_TRUE(v.ok());
+	EXPECT_EQ(1, v.major());
+	EXPECT_EQ(2, v.minor());
+	EXPECT_EQ(3, v.patch());
+	EXPECT_STREQ("", v.prerelease().c_str());
+	EXPECT_STREQ("foo.bar-123", v.build().c_str());
+	EXPECT_STREQ("1.2.3+foo.bar-123", to_string(v).c_str());
+}
+
+TEST_F(test_semver_construction, numerical_valid_prerelease_valid_build)
+{
+	const auto v = semver(1, 2, 3, "beta-2.1", "foo.bar-123");
+
+	EXPECT_TRUE(v.ok());
+	EXPECT_EQ(1, v.major());
+	EXPECT_EQ(2, v.minor());
+	EXPECT_EQ(3, v.patch());
+	EXPECT_STREQ("beta-2.1", v.prerelease().c_str());
+	EXPECT_STREQ("foo.bar-123", v.build().c_str());
+	EXPECT_STREQ("1.2.3-beta-2.1+foo.bar-123", to_string(v).c_str());
+}
+
+TEST_F(test_semver_construction, numerical_invalid_prerelease_valid_build)
+{
+	const auto v = semver(1, 2, 3, "beta+2.1", "foo.bar-123");
+
+	EXPECT_FALSE(v.ok());
+}
 }
 

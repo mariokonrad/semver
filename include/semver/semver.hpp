@@ -60,6 +60,19 @@ public:
 			good_ = detail::semver_parser(major_, minor_, patch_, prerelease_).ok();
 	}
 
+	semver(number_type major, number_type minor, number_type patch,
+		const std::string & prerelease, const std::string & build)
+		: major_(major)
+		, minor_(minor)
+		, patch_(patch)
+		, prerelease_(prerelease)
+		, build_(build)
+		, good_(prerelease_.empty() && build_.empty())
+	{
+		if (!good_)
+			good_ = detail::semver_parser(major_, minor_, patch_, prerelease_, build_).ok();
+	}
+
 	number_type major() const noexcept { return major_; }
 	number_type minor() const noexcept { return minor_; }
 	number_type patch() const noexcept { return patch_; }

@@ -44,11 +44,25 @@ public:
 		, prerelease_(prerelease)
 		, good_(prerelease_.empty())
 	{
+		if (!good_)
+			good_ = only_parse_prerelease();
+	}
+
+	semver_parser(number_type major, number_type minor, number_type patch,
+		const std::string & prerelease, const std::string & build)
+		: major_(major)
+		, minor_(minor)
+		, patch_(patch)
+		, prerelease_(prerelease)
+		, build_(build)
+		, good_(prerelease_.empty() && build_.empty())
+	{
 		if (!good_) {
-			last_ = prerelease_.data() + prerelease_.size();
-			cursor_ = prerelease_.data();
-			parse_pre_release();
-			good_ = (cursor_ == last_) && !error_;
+			good_ = true;
+			if (!prerelease_.empty())
+				good_ &= only_parse_prerelease();
+			if (!build_.empty())
+				good_ &= only_parse_build();
 		}
 	}
 
@@ -75,6 +89,22 @@ private:
 
 	std::string data_;
 	bool good_ = false;
+
+	bool only_parse_prerelease()
+	{
+		last_ = prerelease_.data() + prerelease_.size();
+		cursor_ = prerelease_.data();
+		parse_pre_release();
+		return (cursor_ == last_) && !error_;
+	}
+
+	bool only_parse_build()
+	{
+		last_ = build_.data() + build_.size();
+		cursor_ = build_.data();
+		parse_build();
+		return (cursor_ == last_) && !error_;
+	}
 
 	static std::string token(const char_type * start, const char_type * end) noexcept
 	{
