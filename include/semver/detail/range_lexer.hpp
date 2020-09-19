@@ -13,7 +13,7 @@ inline namespace v1
 {
 namespace detail
 {
-class lexer final
+class range_lexer final
 {
 public:
 	using string_type = std::string;
@@ -46,7 +46,7 @@ public:
 		string_type build = {};
 	};
 
-	lexer(const std::string & s)
+	range_lexer(const std::string & s)
 		: data_(s)
 	{
 		cursor_ = data_.data();
@@ -339,7 +339,7 @@ private:
 	}
 };
 
-inline semver lower_bound(const lexer::parts & p)
+inline semver lower_bound(const range_lexer::parts & p)
 {
 	if (p.major.empty() || p.major == "*")
 		return semver::min();
@@ -358,7 +358,7 @@ inline semver lower_bound(const lexer::parts & p)
 		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
 }
 
-inline semver upper_bound(const lexer::parts & p)
+inline semver upper_bound(const range_lexer::parts & p)
 {
 	if (p.major.empty() || p.major == "*")
 		return semver::max();

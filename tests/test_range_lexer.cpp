@@ -5,7 +5,7 @@
 
 namespace
 {
-using lexer = semver::detail::lexer;
+using lexer = semver::detail::range_lexer;
 
 class test_range_lexer : public ::testing::Test {};
 

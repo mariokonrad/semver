@@ -13,59 +13,7 @@ inline namespace v1
 {
 namespace detail
 {
-/*
-https://github.com/npm/node-semver#versions
-https://semver.npmjs.com/
-
-https://docs.npmjs.com/misc/semver
-
-BNF:
-
-	range-set  ::= range ( logical-or range ) *
-	logical-or ::= ( ' ' ) * '||' ( ' ' ) *
-	range      ::= hyphen | simple ( ' ' simple ) * | ''
-	hyphen     ::= partial ' - ' partial
-	simple     ::= primitive | partial | tilde | caret
-	primitive  ::= ( '<' | '>' | '>=' | '<=' | '=' ) partial
-	partial    ::= xr ( '.' xr ( '.' xr qualifier ? )? )?
-	xr         ::= 'x' | 'X' | '*' | nr
-	nr         ::= '0' | ['1'-'9'] ( ['0'-'9'] ) *
-	tilde      ::= '~' partial
-	caret      ::= '^' partial
-	qualifier  ::= ( '-' pre )? ( '+' build )?
-	pre        ::= parts
-	build      ::= parts
-	parts      ::= part ( '.' part ) *
-	part       ::= nr | [-0-9A-Za-z]+
-
-
-cheat sheet: https://devhints.io/semver
-
----------------------------------------
-
-	range-set  ::= '' | range ( logical-or range ) *
-	logical-or ::= '||'
-	range      ::= hyphen | simple+
-	hyphen     ::= partial '-' partial
-	simple     ::= partial | primitive | caret | tilde
-
-	primitive  ::= op partial
-	caret      ::= caret partial
-	tilde      ::= tilde partial
-
-	op         ::= '<' | '>' | '>=' | '<=' | '='
-
-	partial    ::= xr ( '.' xr ( '.' xr qualifier ? )? )?
-	xr         ::= 'x' | 'X' | '*' | nr
-	nr         ::= '0' | ['1'-'9'] ( ['0'-'9'] ) *
-	qualifier  ::= ( '-' pre )? ( '+' build )?
-	pre        ::= parts
-	build      ::= parts
-	parts      ::= part ( '.' part ) *
-	part       ::= nr | [-0-9A-Za-z]+
-*/
-
-static inline std::string trim(std::string s)
+inline std::string trim(std::string s)
 {
 	const auto b = s.find_first_not_of(" ");
 	const auto e = s.find_last_not_of(" ");
@@ -100,13 +48,13 @@ public:
 	}
 
 private:
-	using token = ::semver::v1::detail::lexer::token;
+	using token = ::semver::v1::detail::range_lexer::token;
 
-	detail::lexer lex_;
-	detail::lexer::token token_ = detail::lexer::token::eof;
-	detail::lexer::token next_ = detail::lexer::token::eof;
-	detail::lexer::parts token_text_ = {};
-	detail::lexer::parts next_text_ = {};
+	detail::range_lexer lex_;
+	detail::range_lexer::token token_ = detail::range_lexer::token::eof;
+	detail::range_lexer::token next_ = detail::range_lexer::token::eof;
+	detail::range_lexer::parts token_text_ = {};
+	detail::range_lexer::parts next_text_ = {};
 
 	bool good_ = false;
 	std::vector<std::unique_ptr<node>> ast_;

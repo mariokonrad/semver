@@ -158,10 +158,9 @@ public:
 	}
 
 	bool is_leaf() const noexcept { return nodes_.empty(); }
-	type get_type() const { return type_; }
-	bool has_version() const { return version_.has_value(); }
+	type get_type() const noexcept { return type_; }
+	bool has_version() const noexcept { return version_.has_value(); }
 	const semver & get_version() const { return *version_; }
-
 
 	friend std::vector<std::unique_ptr<node>>::const_iterator begin(const node & n)
 	{

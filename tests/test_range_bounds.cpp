@@ -5,8 +5,8 @@
 
 namespace
 {
+using lexer = ::semver::v1::detail::range_lexer;
 using ::semver::v1::semver;
-using ::semver::v1::detail::lexer;
 using ::semver::v1::detail::lower_bound;
 using ::semver::v1::detail::upper_bound;
 using ::semver::v1::detail::node;
