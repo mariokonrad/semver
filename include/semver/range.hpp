@@ -4,7 +4,6 @@
 #include "detail/range_node.hpp"
 #include "detail/range_parser.hpp"
 #include <semver/semver.hpp>
-#include <sstream>
 #include <memory>
 #include <vector>
 #include <cassert>
@@ -131,6 +130,7 @@ private:
 		}
 		return result;
 	}
+
 	friend bool operator==(const range & r1, const range & r2) noexcept
 	{
 		if (r1.nodes_.size() != r2.nodes_.size())
@@ -147,20 +147,19 @@ private:
 
 inline std::string to_string(const range & r)
 {
-	std::ostringstream os;
-
+	std::string s;
 	bool first = true;
 	for (const auto & n : r.nodes_) {
 		if (first) {
 			first = false;
 		} else {
-			os << " || ";
+			s += " || ";
 		}
 
-		os << *n;
+		s += to_string(*n);
 	}
 
-	return os.str();
+	return s;
 }
 
 inline std::ostream & operator<<(std::ostream & os, const range & r)

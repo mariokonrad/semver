@@ -246,7 +246,6 @@ private:
 				continue;
 			}
 			if (is_op(token_)) {
-				// TODO: refactoring
 				if (token_text_.op == "<")
 					ast_push(node::create_lt(lower_bound(token_text_)));
 				if (token_text_.op == "<=")

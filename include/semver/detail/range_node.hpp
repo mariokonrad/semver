@@ -159,7 +159,19 @@ public:
 
 	bool is_leaf() const noexcept { return nodes_.empty(); }
 	type get_type() const { return type_; }
+	bool has_version() const { return version_.has_value(); }
 	const semver & get_version() const { return *version_; }
+
+
+	friend std::vector<std::unique_ptr<node>>::const_iterator begin(const node & n)
+	{
+		return cbegin(n.nodes_);
+	}
+
+	friend std::vector<std::unique_ptr<node>>::const_iterator end(const node & n)
+	{
+		return cend(n.nodes_);
+	}
 
 	template <typename Visitor> void visit_postfix(Visitor v) const
 	{
@@ -173,34 +185,6 @@ public:
 		v(*this);
 		for (const auto & n : nodes_)
 			n->visit_prefix(v);
-	}
-
-	friend std::ostream & operator<<(std::ostream & os, const node::type t)
-	{
-		switch (t) {
-			case type::op_and:
-				os << "&&";
-				break;
-			case type::op_or:
-				os << "||";
-				break;
-			case type::op_eq:
-				os << "=";
-				break;
-			case type::op_lt:
-				os << "<";
-				break;
-			case type::op_le:
-				os << "<=";
-				break;
-			case type::op_gt:
-				os << ">";
-				break;
-			case type::op_ge:
-				os << ">=";
-				break;
-		}
-		return os;
 	}
 
 	friend bool operator==(const node & a, const node & b)
@@ -234,16 +218,6 @@ public:
 		return false;
 	}
 
-	friend std::vector<std::unique_ptr<node>>::const_iterator begin(const node & n)
-	{
-		return begin(n.nodes_);
-	}
-
-	friend std::vector<std::unique_ptr<node>>::const_iterator end(const node & n)
-	{
-		return cend(n.nodes_);
-	}
-
 private:
 	type type_;
 	std::optional<semver> version_;
@@ -272,27 +246,58 @@ private:
 		return false;
 	}
 
-	friend std::ostream & dump(std::ostream &, const node &, int);
 	friend void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> &, node &);
-
-	friend std::ostream & operator<<(std::ostream & os, const node & n)
-	{
-		if (n.is_leaf()) {
-			os << n.get_type() << n.get_version();
-		} else {
-			bool first = true;
-			for (const auto & c : n.nodes_) {
-				if (first) {
-					first = false;
-				} else {
-					os << " ";
-				}
-				os << *c;
-			}
-		}
-		return os;
-	}
 };
+
+inline std::string to_string(const node::type t)
+{
+	switch (t) {
+		case node::type::op_and:
+			return "&&";
+		case node::type::op_or:
+			return "||";
+		case node::type::op_eq:
+			return "=";
+		case node::type::op_lt:
+			return "<";
+		case node::type::op_le:
+			return "<=";
+		case node::type::op_gt:
+			return ">";
+		case node::type::op_ge:
+			return ">=";
+	}
+	return {};
+}
+
+inline std::ostream & operator<<(std::ostream & os, const node::type t)
+{
+	return os << to_string(t);
+}
+
+inline std::string to_string(const node & n)
+{
+	if (n.is_leaf())
+		return to_string(n.get_type()) + to_string(n.get_version());
+
+	std::string s;
+	bool first = true;
+	for (const auto & c : n) {
+		if (first) {
+			first = false;
+		} else {
+			s += ' ';
+		}
+
+		s += to_string(*c);
+	}
+	return s;
+}
+
+inline std::ostream & operator<<(std::ostream & os, const node & n)
+{
+	return os << to_string(n);
+}
 
 inline semver lower_bound(const node & n)
 {
@@ -349,22 +354,6 @@ inline void collect_leafs_and_andnodes(std::vector<std::unique_ptr<node>> & v, n
 			v.push_back(std::move(p));
 		}
 	}
-}
-
-inline std::ostream & dump(std::ostream & os, const node & n, int indent) // TODO: temporary
-{
-	os << n.get_type();
-	if (n.version_) {
-		os << *n.version_;
-	} else {
-		os << '\n';
-		for (const auto & child : n.nodes_) {
-			os << std::string(indent * 4, ' ') << "  n: ";
-			dump(os, *child, indent + 1);
-		}
-	}
-
-	return os << '\n';
 }
 }
 }
