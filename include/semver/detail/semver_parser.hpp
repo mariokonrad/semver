@@ -19,6 +19,8 @@ class semver_parser final
 public:
 	using number_type = unsigned long;
 
+	static number_type ston(const std::string & s) { return std::stoul(s); }
+
 	semver_parser(const std::string & s, bool loose = false)
 		: data_(s)
 	{

@@ -1,6 +1,7 @@
 #ifndef SEMVER_DETAIL_RANGE_LEXER_HPP
 #define SEMVER_DETAIL_RANGE_LEXER_HPP
 
+#include "semver_parser.hpp"
 #include <semver/semver.hpp>
 #include <algorithm>
 #include <string>
@@ -340,16 +341,18 @@ private:
 
 inline semver lower_bound(const lexer::parts & p)
 {
-	// TODO: to be optimized, re-parse semver? meh...
-
 	if (p.major.empty() || p.major == "*")
 		return semver::min();
 
+	const auto major = semver_parser::ston(p.major);
+
 	if (p.minor.empty() || p.minor == "*")
-		return semver(p.major + ".0.0");
+		return semver(major, 0, 0);
+
+	const auto minor = semver_parser::ston(p.minor);
 
 	if (p.patch.empty() || p.patch == "*")
-		return semver(p.major + "." + p.minor + ".0");
+		return semver(major, minor, 0);
 
 	return semver(p.token.substr(
 		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
@@ -357,26 +360,29 @@ inline semver lower_bound(const lexer::parts & p)
 
 inline semver upper_bound(const lexer::parts & p)
 {
-	// TODO: to be optimized, re-parse semver? meh...
-
 	if (p.major.empty() || p.major == "*")
 		return semver::max();
 
+	const auto major = semver_parser::ston(p.major);
+
 	if (p.op == "^" && p.major != "0")
-		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+		return semver(major + 1u, 0, 0, "0");
 
 	if (p.minor.empty() || p.minor == "*")
-		return semver(std::to_string(std::stoul(p.major) + 1u) + ".0.0-0");
+		return semver(major + 1u, 0, 0, "0");
+
+	const auto minor = semver_parser::ston(p.minor);
 
 	if (p.op == "^" && p.minor != "0")
-		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+		return semver(major, minor + 1u, 0, "0");
 
 	if (p.patch.empty() || p.patch == "*" || p.op == "~")
-		return semver(p.major + "." + std::to_string(std::stoul(p.minor) + 1u) + ".0-0");
+		return semver(major, minor + 1u, 0, "0");
+
+	const auto patch = semver_parser::ston(p.patch);
 
 	if (p.op == "^" && p.patch != "0")
-		return semver(
-			p.major + "." + p.minor + "." + std::to_string(std::stoul(p.patch) + 1u) + "-0");
+		return semver(major, minor, patch + 1u, "0");
 
 	return semver(p.token.substr(
 		p.op.size(), p.token.size() - p.op.size() - p.build.size() + 1)); // cut op and build
