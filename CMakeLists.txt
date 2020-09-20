@@ -35,6 +35,7 @@ target_sources(${PROJECT_NAME}
 		src/detail/range_parser.hpp
 		src/detail/semver_parser.hpp
 	)
+
 target_include_directories(${PROJECT_NAME}
 	PUBLIC
 		$<INSTALL_INTERFACE:include>
@@ -42,7 +43,32 @@ target_include_directories(${PROJECT_NAME}
 	PRIVATE
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	)
+
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+target_compile_options(${PROJECT_NAME}
+	PRIVATE
+		-Wall
+		-Wextra
+		-Wpedantic
+		-Werror
+		-pedantic-errors
+		-Wold-style-cast
+		-Wcast-align
+		-Wcast-qual
+		-Wmissing-field-initializers
+		-Wmissing-format-attribute
+		-Wmissing-include-dirs
+		-Wmissing-noreturn
+		-Wnon-virtual-dtor
+		-Woverloaded-virtual
+		-Wswitch
+		-Wunreachable-code
+		-Wunused
+		-Wunused-parameter
+		-Wvariadic-macros
+		-Wwrite-strings
+	)
 
 set_target_properties(${PROJECT_NAME}
 	PROPERTIES
@@ -54,6 +80,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 set(targets_export_name ${PROJECT_NAME}-targets)
 set(include_install_dir ${CMAKE_INSTALL_INCLUDEDIR})
+
 install(
 	TARGETS ${PROJECT_NAME}
 	EXPORT ${targets_export_name}
@@ -62,23 +89,28 @@ install(
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	INCLUDES DESTINATION ${include_install_dir}
 	)
+
 install(
 	DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
 	DESTINATION ${include_install_dir}
 	)
+
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/config.cmake.in
 	include(${CMAKE_CURRENT_LIST_DIR}/@targets_export_name@.cmake)
 	)
+
 configure_package_config_file(
 	${CMAKE_CURRENT_BINARY_DIR}/config.cmake.in
 	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
 	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 	PATH_VARS include_install_dir
 	)
+
 write_basic_package_version_file(
 	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
 	VERSION "${PROJECT_VERSION}" COMPATIBILITY SameMajorVersion
 	)
+
 install(
 	FILES
 		${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
@@ -125,6 +157,7 @@ if(NOT DISABLE_TESTING)
 
 	enable_testing()
 	add_executable(testrunner)
+
 	target_sources(testrunner
 		PRIVATE
 			tests/test_semver_construction.cpp
@@ -141,6 +174,7 @@ if(NOT DISABLE_TESTING)
 			tests/test_range_bounds.cpp
 			tests/test_range_string.cpp
 		)
+
 	target_compile_options(testrunner
 		PRIVATE
 			-Wall
@@ -148,10 +182,12 @@ if(NOT DISABLE_TESTING)
 			-Wpedantic
 			-Werror
 		)
+
 	target_include_directories(testrunner
 		PRIVATE
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 		)
+
 	target_link_libraries(testrunner
 		PRIVATE
 			gtest
@@ -159,6 +195,7 @@ if(NOT DISABLE_TESTING)
 			gmock_main
 			${PROJECT_NAME}
 		)
+
 	include(GoogleTest)
 	gtest_add_tests(TARGET testrunner)
 endif()
