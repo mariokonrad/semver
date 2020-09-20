@@ -60,6 +60,9 @@ GoogleTest is used for testing.
 Tested with compilers:
 - GCC-9
 - GCC-10
+- Clang-9
+- Clang-10
+- Clang-12
 
 Build and run tests:
 ```bash
