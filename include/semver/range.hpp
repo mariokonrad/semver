@@ -1,23 +1,23 @@
 #ifndef SEMVER_RANGE_HPP
 #define SEMVER_RANGE_HPP
 
-#include "detail/range_node.hpp"
-#include "detail/range_parser.hpp"
 #include <semver/semver.hpp>
 #include <memory>
 #include <vector>
-#include <cassert>
 
 namespace semver
 {
 inline namespace v1
 {
+namespace detail
+{
+struct node; // forward
+}
+
 class range final
 {
 public:
-	using number_type = detail::range_parser::number_type;
-
-	~range() = default;
+	~range();
 
 	range(const range &) = default;
 	range & operator=(const range &) = default;
@@ -25,153 +25,34 @@ public:
 	range(range &&) = default;
 	range & operator=(range &&) = default;
 
-	range(const std::string & s)
-	{
-		auto p = detail::range_parser(s);
-		good_ = p.ok();
-		if (good_)
-			nodes_ = p.ast();
-	}
+	range(const std::string & s);
 
 	bool ok() const noexcept { return good_; }
 	explicit operator bool() const noexcept { return ok(); }
 
-	semver max() const noexcept
-	{
-		// Algorithm:
-		//
-		//   1. collect all min/max of 'or' nodes -> v_min, v_max
-		//
-		//   2. collect min/max from all 'and' nodes using (min|max)_satisfying, for all 'and':
-		//      - min = min_satisfying({local min})
-		//      - max = max_satisfying({local max})
-		//
-		//   3. determine min/max using (min|max)_satisfying from v_min/v_max and min/max from step 2
-		//
+	semver max() const noexcept;
+	semver min() const noexcept;
 
-		std::vector<semver> v;
-		for (const auto & n : nodes_) {
-			if (n->is_leaf()) {
-				v.emplace_back(upper_bound(*n));
-			} else {
-				std::vector<semver> local;
-				for (const auto & m : *n)
-					local.emplace_back(upper_bound(*m));
-				v.push_back(max_satisfying(local));
-			}
-		}
-
-		return max_satisfying(v);
-	}
-
-	semver min() const noexcept
-	{
-		std::vector<semver> v;
-		for (const auto & n : nodes_) {
-			if (n->is_leaf()) {
-				v.emplace_back(lower_bound(*n));
-			} else {
-				std::vector<semver> local;
-				for (const auto & m : *n)
-					local.emplace_back(lower_bound(*m));
-				v.push_back(min_satisfying(local));
-			}
-		}
-
-		return min_satisfying(v);
-	}
-
-	bool satisfies(const semver & v) const noexcept
-	{
-		if (nodes_.empty())
-			return false;
-
-		// all nodes in AST are implicit `or`
-		for (const auto & n : nodes_)
-			if (n->eval(v))
-				return true;
-
-		return false;
-	}
-
-	semver max_satisfying(const std::vector<semver> & versions) const noexcept
-	{
-		return satisfies_if(begin(versions), end(versions), std::greater<> {});
-	}
-
-	semver min_satisfying(const std::vector<semver> & versions) const noexcept
-	{
-		return satisfies_if(begin(versions), end(versions), std::less<> {});
-	}
-
+	bool satisfies(const semver & v) const noexcept;
 	bool outside(const semver & v) const noexcept { return !satisfies(v); }
+
+	semver max_satisfying(const std::vector<semver> & versions) const noexcept;
+	semver min_satisfying(const std::vector<semver> & versions) const noexcept;
+
+	friend bool operator==(const range & r1, const range & r2) noexcept; // TODO: make it non-friend
+	friend std::string to_string(const range &); // TODO: make it non-friend
 
 private:
 	bool good_ = false;
 	std::vector<std::unique_ptr<detail::node>> nodes_;
-
-	template <typename Iterator, typename Predicate>
-	typename Iterator::value_type satisfies_if(
-		Iterator first, Iterator last, Predicate pred) const noexcept
-	{
-		if (first == last)
-			return {};
-		bool never_checked = true;
-		typename Iterator::value_type result = {};
-		for (; first != last; ++first) {
-			if (satisfies(*first)) {
-				if (never_checked) {
-					never_checked = false;
-					result = *first;
-				} else if (pred(*first, result)) {
-					result = *first;
-				}
-			}
-		}
-		return result;
-	}
-
-	friend bool operator==(const range & r1, const range & r2) noexcept
-	{
-		if (r1.nodes_.size() != r2.nodes_.size())
-			return false;
-
-		return std::equal(begin(r1.nodes_), end(r1.nodes_), begin(r2.nodes_),
-			[](const auto & a, const auto & b) { return *a == *b; });
-	}
-
-	friend bool operator!=(const range & r1, const range & r2) noexcept { return !(r1 == r2); }
-
-	friend std::string to_string(const range &);
 };
 
-inline std::string to_string(const range & r)
-{
-	std::string s;
-	bool first = true;
-	for (const auto & n : r.nodes_) {
-		if (first) {
-			first = false;
-		} else {
-			s += " || ";
-		}
+std::string to_string(const range & r);
+std::ostream & operator<<(std::ostream & os, const range & r);
 
-		s += to_string(*n);
-	}
+bool operator!=(const range & r1, const range & r2) noexcept;
 
-	return s;
-}
-
-inline std::ostream & operator<<(std::ostream & os, const range & r)
-{
-	return os << to_string(r);
-}
-
-inline bool intersect(const range &, const range &) noexcept
-{
-	// TODO: implementation
-	return false;
-}
+bool intersect(const range &, const range &) noexcept;
 }
 }
 

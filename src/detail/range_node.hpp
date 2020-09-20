@@ -2,6 +2,8 @@
 #define SEMVER_DETAIL_RANGE_NODE_HPP
 
 #include <semver/semver.hpp>
+#include <algorithm>
+#include <limits>
 #include <optional>
 #include <ostream>
 #include <memory>

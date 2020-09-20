@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(EXISTS $ENV{HOME}/local/repo/googletest)
 	set(repo_googletest "file://$ENV{HOME}/local/repo/googletest")
@@ -29,22 +30,28 @@ FetchContent_Declare(googletest
 FetchContent_MakeAvailable(googletest)
 
 ### library
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
-	INTERFACE
+	PRIVATE
 		include/semver/semver.hpp
 		include/semver/range.hpp
-		include/semver/detail/range_lexer.hpp
-		include/semver/detail/range_node.hpp
-		include/semver/detail/range_parser.hpp
-		include/semver/detail/semver_parser.hpp
+		src/semver.cpp
+		src/range.cpp
+		src/detail/range_lexer.hpp
+		src/detail/range_node.hpp
+		src/detail/range_parser.hpp
+		src/detail/semver_parser.hpp
 	)
 target_include_directories(${PROJECT_NAME}
-	INTERFACE
+	PUBLIC
 		$<INSTALL_INTERFACE:include>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	PRIVATE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+
+# TODO: add install / target export
 
 ### examples
 add_executable(semver-compare)
@@ -88,6 +95,10 @@ target_compile_options(testrunner
 		-Wextra
 		-Wpedantic
 		-Werror
+	)
+target_include_directories(testrunner
+	PRIVATE
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	)
 target_link_libraries(testrunner
 	PRIVATE

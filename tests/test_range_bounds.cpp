@@ -1,5 +1,5 @@
-#include "semver/detail/range_lexer.hpp"
-#include <semver/range.hpp>
+#include "detail/range_lexer.hpp"
+#include "detail/range_node.hpp"
 #include <gtest/gtest.h>
 #include <array>
 

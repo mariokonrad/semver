@@ -1,4 +1,4 @@
-#include <semver/range.hpp>
+#include "detail/range_node.hpp"
 #include <gtest/gtest.h>
 
 namespace

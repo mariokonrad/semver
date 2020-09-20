@@ -27,8 +27,6 @@ private:
 	using char_type = std::string::value_type;
 
 public:
-	using number_type = unsigned long;
-
 	range_parser(const std::string & s)
 		: lex_(trim(s))
 	{

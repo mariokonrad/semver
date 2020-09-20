@@ -1,4 +1,4 @@
-#include "semver/detail/semver_parser.hpp"
+#include "detail/semver_parser.hpp"
 #include <gtest/gtest.h>
 
 namespace {

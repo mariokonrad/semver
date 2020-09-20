@@ -1,4 +1,4 @@
-#include <semver/detail/range_lexer.hpp>
+#include "detail/range_lexer.hpp"
 #include <gtest/gtest.h>
 
 #define EXPECT_SV(s, e) EXPECT_EQ(std::string_view(s), (e))
