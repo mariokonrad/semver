@@ -9,6 +9,7 @@ flags = [
 	'-pedantic',
 	'-std=c++17',
 	'-Iinclude',
+	'-Isrc',
 	'-Ibuild/include',
 	'-Ibuild/local/include',
     '-Ibuild/_deps/googletest-src/googletest/include',

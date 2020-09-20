@@ -4,7 +4,7 @@
 " This just my personal preference for normal day-to-day development of this project.
 
 " grepping
-map <F4> :grep -Ernw --include=*.c* --include=*.h* <cword> include tests <Bar> cw<CR>
+map <F4> :grep -Ernw --include=*.c* --include=*.h* <cword> include src tests <Bar> cw<CR>
 
 " tags
 set tags+=.ctags/tags,build/tags
