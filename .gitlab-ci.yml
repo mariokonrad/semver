@@ -2,7 +2,6 @@
   script:
     - .gitlab-ci/gitlab-build.sh
     - tests/test_subdirectory.sh
-    - tests/test_fetchcontent.sh
 
 build:gcc-10.2.0:
   variables:

@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-echo -e "section_start:`date +%s`:${id}\r\e[0K$(basename $0)"
+echo -e "section_start:`date +%s`:$(basename $0)\r\e[0K$(basename $0)"
 
 SCRIPT_DIR=$(dirname $(readlink -f "$0"))
 LIBRARY_REPOSITORY=${SCRIPT_DIR}/..
@@ -19,5 +19,5 @@ ${build_dir}/semver-test && echo "success"
 
 rm -fr ${build_dir}
 
-echo -e "section_end:`date +%s`:${id}\r\e[0K"
+echo -e "section_end:`date +%s`:$(basename $0)\r\e[0K"
 
