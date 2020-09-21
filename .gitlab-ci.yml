@@ -4,7 +4,7 @@
     - tests/test_subdirectory.sh
     - tests/test_fetchcontent.sh
 
-build:gcc-10.1.0:
+build:gcc-10.2.0:
   variables:
     COMPILER: gcc-10.2.0
     BUILD_TYPE: Release
