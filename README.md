@@ -4,6 +4,7 @@
 
 License: BSD, see [LICENSE.md](LICENSE.md)
 
+
 ## Introduction
 
 Implementation of semver 2.0.0, https://semver.org/
@@ -14,7 +15,9 @@ Parital implementatoin of ranges, https://github.com/npm/node-semver#versions, h
 - support for tile ranges, e.g. `~1.2.3`, `~1.2`
 - support for caret ranges, e.g. `^1.2.3`
 
-## Examples `semver`
+
+## Examples
+### Examples `semver`
 
 Construction from string:
 ```cpp
@@ -37,9 +40,40 @@ auto v4 = semver("2.3.4");
 assert(v3 < v4);
 ```
 
-## Examples `range`
+Access individual parts:
+```cpp
+const auto v = semver("1.2.3-pre.1+build.2");
+assert(v.major() == 1);
+assert(v.minor() == 2);
+assert(v.patch() == 3);
+assert(v.prerelease() == "pre.1");
+assert(v.build() == "build.2");
+```
 
-Construction
+Convert to string:
+```cpp
+const auto v = semver(1, 2, 3, "pre.1", "build.2");
+assert(v.str() == "1.2.3-pre.1+build.2");
+assert(to_string(v) == "1.2.3-pre.1+build.2");
+```
+
+Roundtrip guarantee:
+```cpp
+const auto v1 = semver(1, 2, 3, "pre.1", "build.2");
+const auto v2 = semver(v1.str());
+assert(v1 == v2);
+```
+
+Handling of invalid construction:
+```cpp
+const auto v = semver("foobar");
+assert(v.ok() == false);
+```
+
+
+### Examples `range`
+
+Construction:
 ```cpp
 const auto r = range(">=1.2.3 <2.0.0 || 3.0.0");
 ```
@@ -51,6 +85,31 @@ assert(r.satisfies(semver("1.2.3")));
 assert(r.satisfies(semver("1.9.0")));
 assert(r.satisfies(semver("3.0.0")));
 ```
+
+Find min/max satisfying version:
+```cpp
+const auto r = range(">=1.2.3 <2.0.0 || 3.0.0");
+
+auto v1 = r.max_satisfying({semver("1.3.4"), semver("1.5.1"), semver("2.3.0")});
+assert(v1 == semver(1, 5, 1));
+
+auto v2 = r.min_satisfying({semver("1.3.4"), semver("1.5.1"), semver("2.3.0")});
+assert(v2 == semver(1, 3, 4));
+```
+
+Find min/max version of a range:
+```cpp
+const auto r = range(">=1.2.3 <2.0.0 || 3.0.0");
+assert(r.max() == semver(3, 0, 0));
+assert(r.min() == semver(1, 2, 3));
+```
+
+Handlin of invalid construction:
+```cpp
+const auto r = range("foobar");
+assert(r.ok() == false);
+```
+
 
 ## Build
 
@@ -69,5 +128,11 @@ Build and run tests:
 cmake -B build -DCMAKE_BUILD_TYPE=Release .
 cmake --build build -j 4
 build/testrunner
+```
+
+Build only library:
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_TESTS=TRUE -DDISABLE_EXAMPLES=TRUE .
+cmake --build build -j 4
 ```
 
