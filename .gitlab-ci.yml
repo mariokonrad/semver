@@ -1,10 +1,12 @@
 .build_template: &build_definition
   script:
     - .gitlab-ci/gitlab-build.sh
+    - tests/test_subdirectory.sh
+    - tests/test_fetchcontent.sh
 
 build:gcc-10.1.0:
   variables:
-    COMPILER: gcc-10.1.0
+    COMPILER: gcc-10.2.0
     BUILD_TYPE: Release
     GTEST_COLOR: 1
   image: mariokonrad/marnav:${COMPILER}
