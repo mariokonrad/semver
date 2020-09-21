@@ -9,7 +9,7 @@ cmake \
 	-B ${build_dir} \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DLIBRARY_REPOSITORY=${LIBRARY_REPOSITORY} \
-	${SCRIPT_DIR}/subdirectory
+	${SCRIPT_DIR}/fetchcontent
 
 cmake --build ${build_dir}
 
