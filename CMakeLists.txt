@@ -160,19 +160,19 @@ if(NOT DISABLE_TESTING)
 
 	target_sources(testrunner
 		PRIVATE
-			tests/test_semver_construction.cpp
-			tests/test_semver_construction_loose.cpp
-			tests/test_semver_comparison.cpp
-			tests/test_semver_string.cpp
-			tests/test_semver_parser.cpp
-			tests/test_range_construction.cpp
-			tests/test_range_comparison.cpp
-			tests/test_range_intersection.cpp
-			tests/test_range_query.cpp
-			tests/test_range_node.cpp
-			tests/test_range_lexer.cpp
-			tests/test_range_bounds.cpp
-			tests/test_range_string.cpp
+			tests/unit/test_semver_construction.cpp
+			tests/unit/test_semver_construction_loose.cpp
+			tests/unit/test_semver_comparison.cpp
+			tests/unit/test_semver_string.cpp
+			tests/unit/test_semver_parser.cpp
+			tests/unit/test_range_construction.cpp
+			tests/unit/test_range_comparison.cpp
+			tests/unit/test_range_intersection.cpp
+			tests/unit/test_range_query.cpp
+			tests/unit/test_range_node.cpp
+			tests/unit/test_range_lexer.cpp
+			tests/unit/test_range_bounds.cpp
+			tests/unit/test_range_string.cpp
 		)
 
 	target_compile_options(testrunner

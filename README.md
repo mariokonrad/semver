@@ -130,9 +130,16 @@ cmake --build build -j 4
 build/testrunner
 ```
 
-Build only library:
+Build library only:
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_TESTS=TRUE -DDISABLE_EXAMPLES=TRUE .
 cmake --build build -j 4
+```
+
+Build and install library:
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DDISABLE_TESTS=TRUE -DDISABLE_EXAMPLES=TRUE -DCMAKE_INSTALL_PREFIX=`pwd`/local .
+cmake --build build -j 4
+cmake --install build
 ```
 
