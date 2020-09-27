@@ -167,7 +167,6 @@ if(NOT DISABLE_TESTING)
 			tests/unit/test_semver_parser.cpp
 			tests/unit/test_range_construction.cpp
 			tests/unit/test_range_comparison.cpp
-			#tests/unit/test_range_intersection.cpp # TODO: enable during implementation
 			tests/unit/test_range_query.cpp
 			tests/unit/test_range_node.cpp
 			tests/unit/test_range_lexer.cpp

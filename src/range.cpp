@@ -143,12 +143,6 @@ bool operator!=(const range & r1, const range & r2) noexcept
 {
 	return !(r1 == r2);
 }
-
-bool intersect(const range &, const range &) noexcept
-{
-	// TODO: implementation
-	return false;
-}
 }
 }
 
