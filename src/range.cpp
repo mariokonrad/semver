@@ -135,10 +135,7 @@ std::ostream & operator<<(std::ostream & os, const range & r)
 
 bool operator==(const range & r1, const range & r2) noexcept
 {
-	if (r1.nodes_.size() != r2.nodes_.size())
-		return false;
-
-	return std::equal(begin(r1.nodes_), end(r1.nodes_), begin(r2.nodes_),
+	return std::equal(begin(r1.nodes_), end(r1.nodes_), begin(r2.nodes_), end(r2.nodes_),
 		[](const auto & a, const auto & b) { return *a == *b; });
 }
 

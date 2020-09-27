@@ -39,8 +39,8 @@ public:
 	semver max_satisfying(const std::vector<semver> & versions) const noexcept;
 	semver min_satisfying(const std::vector<semver> & versions) const noexcept;
 
-	friend bool operator==(const range & r1, const range & r2) noexcept; // TODO: make it non-friend
-	friend std::string to_string(const range &); // TODO: make it non-friend
+	friend bool operator==(const range & r1, const range & r2) noexcept;
+	friend std::string to_string(const range &);
 
 private:
 	bool good_ = false;

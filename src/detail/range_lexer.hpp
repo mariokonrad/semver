@@ -182,7 +182,6 @@ private:
 	token lex_caret_partial()
 	{
 		scan_op();
-		// TODO: spaces allowed here?
 		scan_partial();
 		store();
 		return (!error_) ? token::caret_partial : token::error;
@@ -191,7 +190,6 @@ private:
 	token lex_tilde_partial()
 	{
 		scan_op();
-		// TODO: spaces allowed here?
 		scan_partial();
 		store();
 		return (!error_) ? token::tilde_partial : token::error;
@@ -200,7 +198,6 @@ private:
 	token lex_op_partial()
 	{
 		scan_op();
-		// TODO: spaces allowed here?
 		scan_partial();
 		store();
 		return (!error_) ? token::op_partial : token::error;
