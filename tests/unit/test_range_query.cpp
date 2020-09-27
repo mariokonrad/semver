@@ -200,7 +200,95 @@ TEST_F(test_range_query, satisfies_hyphen_with_or)
 	EXPECT_FALSE(r.satisfies(semver("3.0.0")));
 }
 
-// TODO: satisfies with tilde, caret and xranges
+TEST_F(test_range_query, satisfies_tilde_major)
+{
+	const auto r = range("~1");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_TRUE(r.satisfies(semver("1.0.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_TRUE(r.satisfies(semver("1.3.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
+
+TEST_F(test_range_query, satisfies_tilde_major_minor)
+{
+	const auto r = range("~1.2");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_FALSE(r.satisfies(semver("1.0.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_FALSE(r.satisfies(semver("1.3.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
+
+TEST_F(test_range_query, satisfies_tilde_major_minor_patch)
+{
+	const auto r = range("~1.2.3");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_FALSE(r.satisfies(semver("1.0.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.2.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_FALSE(r.satisfies(semver("1.3.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
+
+TEST_F(test_range_query, satisfies_caret_major_minor_patch)
+{
+	const auto r = range("^1.2.3");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_FALSE(r.satisfies(semver("1.0.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.2.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_TRUE(r.satisfies(semver("1.3.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
+
+TEST_F(test_range_query, satisfies_xrange_major_minor_wildpatch)
+{
+	const auto r = range("1.2.x");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_FALSE(r.satisfies(semver("1.0.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_FALSE(r.satisfies(semver("1.3.0")));
+	EXPECT_FALSE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
+
+TEST_F(test_range_query, satisfies_xrange_major_wildminor)
+{
+	const auto r = range("1.x");
+
+	ASSERT_TRUE(r.ok());
+	EXPECT_TRUE(r.satisfies(semver("1.0.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.2")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.3")));
+	EXPECT_TRUE(r.satisfies(semver("1.2.4")));
+	EXPECT_TRUE(r.satisfies(semver("1.3.0")));
+	EXPECT_TRUE(r.satisfies(semver("1.9.0")));
+	EXPECT_FALSE(r.satisfies(semver("2.0.0")));
+}
 
 TEST_F(test_range_query, max)
 {
