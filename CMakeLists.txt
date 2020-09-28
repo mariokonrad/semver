@@ -140,6 +140,19 @@ endif()
 
 ### testing
 if(NOT DISABLE_TESTING)
+
+	if(NOT DISABLE_EXAMPLES)
+		function(add_test_normalize name str pattern)
+			add_test(NAME normalize-${name} COMMAND $<TARGET_FILE:range-normalize> ${str})
+			set_tests_properties(normalize-${name} PROPERTIES PASS_REGULAR_EXPRESSION ${pattern})
+		endfunction()
+
+		add_test_normalize(x-range-major "x"     ">=0\.0\.0")
+		add_test_normalize(x-range-minor "1.x"   ">=1\.0\.0 <2\.0\.0")
+		add_test_normalize(x-range-patch "1.2.x" ">=1\.2\.0 <1\.3\.0-0")
+	endif()
+
+	# unit tests with GoogleMock
 	if(EXISTS $ENV{HOME}/local/repo/googletest)
 		set(repo_googletest "file://$ENV{HOME}/local/repo/googletest")
 	else()
