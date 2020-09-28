@@ -14,4 +14,5 @@ function section()
 section configure cmake -B build -DCMAKE_BUILD_TYPE=${BUILD_TYPE} .
 section build     cmake --build build -j
 section unittest  cmake --build build --target test -- ARGS="--verbose"
+section tests     "(cd build ; ctest)"
 
