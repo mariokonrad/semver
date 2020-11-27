@@ -4,6 +4,9 @@
 #include <iosfwd>
 #include <string>
 
+#include <semver/glibc-bugfix.hpp> // must be included last
+
+
 namespace semver
 {
 inline namespace v1
