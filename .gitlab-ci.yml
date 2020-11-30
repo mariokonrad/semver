@@ -11,9 +11,25 @@ build:gcc-10.2.0:
   image: mariokonrad/marnav:${COMPILER}
   <<: *build_definition
 
+build:gcc-9.3.0:
+  variables:
+    COMPILER: gcc-9.3.0
+    BUILD_TYPE: Release
+    GTEST_COLOR: 1
+  image: mariokonrad/marnav:${COMPILER}
+  <<: *build_definition
+
 build:clang-10.0.0:
   variables:
     COMPILER: clang-10.0.0
+    BUILD_TYPE: Release
+    GTEST_COLOR: 1
+  image: mariokonrad/marnav:${COMPILER}
+  <<: *build_definition
+
+build:clang-9.0.0:
+  variables:
+    COMPILER: clang-9.0.0
     BUILD_TYPE: Release
     GTEST_COLOR: 1
   image: mariokonrad/marnav:${COMPILER}
