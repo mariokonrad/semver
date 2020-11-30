@@ -1,12 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
-# undocumented, invisible by `--help-variable-list`
-# mentioned here: https://www.reddit.com/r/cmake/comments/in73w8/build_out_of_source_automatically/g47dhdm/
-#set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-#set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
 project(semver
-	VERSION 0.0.0
+	VERSION 1.0.0
 	DESCRIPTION "C++ semver and range"
 	)
 
@@ -17,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-option(DISABLE_TESTING "Disable Testing" OFF)
+option(DISABLE_TESTING  "Disable Testing"  OFF)
 option(DISABLE_EXAMPLES "Disable Examples" OFF)
 
 ### library
