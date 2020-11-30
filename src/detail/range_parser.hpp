@@ -232,7 +232,7 @@ private:
 		if (partial_count > 1) {
 			std::vector<std::unique_ptr<node>> v;
 			for (; partial_count > 0 && ast_back()->is_leaf(); --partial_count)
-				v.push_back(std::move(ast_pop()));
+				v.push_back(ast_pop());
 			ast_push(node::create_and(std::move(v)));
 		}
 	}

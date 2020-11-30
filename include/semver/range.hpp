@@ -11,7 +11,7 @@ inline namespace v1
 {
 namespace detail
 {
-struct node; // forward
+class node; // forward
 }
 
 class range final
