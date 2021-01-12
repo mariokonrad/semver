@@ -1,0 +1,6 @@
+[requires]
+semver/1.0.0@local/testing
+
+[generators]
+cmake_find_package
+
