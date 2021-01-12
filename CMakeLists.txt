@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(semver
-	VERSION 1.0.0
-	DESCRIPTION "C++ semver and range"
+	VERSION 1.0.1
+	DESCRIPTION "C++ library implementing semver 2.0.0 and partial support of ranges of node-semver"
 	)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -99,6 +99,12 @@ configure_package_config_file(
 	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
 	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 	PATH_VARS include_install_dir
+	)
+
+install(
+	EXPORT ${targets_export_name}
+	NAMESPACE "${PROJECT_NAME}::"
+	DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}"
 	)
 
 write_basic_package_version_file(
