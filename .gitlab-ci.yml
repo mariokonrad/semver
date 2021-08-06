@@ -3,9 +3,17 @@
     - .gitlab-ci/gitlab-build.sh
     - tests/test_subdirectory.sh
 
-build:gcc-10.2.0:
+build:gcc-11.1.0:
   variables:
-    COMPILER: gcc-10.2.0
+    COMPILER: gcc-11.1.0
+    BUILD_TYPE: Release
+    GTEST_COLOR: 1
+  image: mariokonrad/marnav:${COMPILER}
+  <<: *build_definition
+
+build:gcc-10.3.0:
+  variables:
+    COMPILER: gcc-10.3.0
     BUILD_TYPE: Release
     GTEST_COLOR: 1
   image: mariokonrad/marnav:${COMPILER}
@@ -14,6 +22,22 @@ build:gcc-10.2.0:
 build:gcc-9.3.0:
   variables:
     COMPILER: gcc-9.3.0
+    BUILD_TYPE: Release
+    GTEST_COLOR: 1
+  image: mariokonrad/marnav:${COMPILER}
+  <<: *build_definition
+
+build:clang-12.0.0:
+  variables:
+    COMPILER: clang-12.0.0
+    BUILD_TYPE: Release
+    GTEST_COLOR: 1
+  image: mariokonrad/marnav:${COMPILER}
+  <<: *build_definition
+
+build:clang-11.0.0:
+  variables:
+    COMPILER: clang-11.0.0
     BUILD_TYPE: Release
     GTEST_COLOR: 1
   image: mariokonrad/marnav:${COMPILER}
