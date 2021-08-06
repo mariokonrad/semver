@@ -165,7 +165,7 @@ if(NOT DISABLE_TESTING)
 	set(BUILD_GMOCK TRUE CACHE BOOL "" FORCE) # do not repeat option, because of description
 	FetchContent_Declare(googletest
 		GIT_REPOSITORY ${repo_googletest}
-		GIT_TAG release-1.10.0
+		GIT_TAG release-1.11.0
 		)
 	FetchContent_MakeAvailable(googletest)
 
