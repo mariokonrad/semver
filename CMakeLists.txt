@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 
 project(semver
-	VERSION 1.0.1
+	VERSION 1.1.0
 	DESCRIPTION "C++ library implementing semver 2.0.0 and partial support of ranges of node-semver"
 	)
 
