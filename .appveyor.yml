@@ -1,0 +1,28 @@
+version: '1.1.0+{build}'
+
+image: Visual Studio 2019
+
+configuration: Release
+
+branches:
+  except:
+    - gh-pages
+
+build_script:
+- cmd: cmake -B build -DCMAKE_BUILD_TYPE=%CONFIGURATION% C:\projects\semver
+- cmd: cmake --build build --config %CONFIGURATION%
+
+test_script:
+- cmd: build\%CONFIGURATION%\testrunner.exe --gtest_output="xml:build\test_report.xml"
+
+after_test:
+- ps: |
+    # example from: https://www.appveyor.com/docs/running-tests/#pushing-real-time-test-results-to-build-console
+    # upload results to AppVeyor
+    $wc = New-Object 'System.Net.WebClient'
+    $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path build\test_report.xml))
+
+artifacts:
+- path: build\test_report.xml
+  name: test_report
+

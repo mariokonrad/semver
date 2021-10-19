@@ -43,26 +43,26 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 
 target_compile_options(${PROJECT_NAME}
 	PRIVATE
-		-Wall
-		-Wextra
-		-Wpedantic
-		-Werror
-		-pedantic-errors
-		-Wold-style-cast
-		-Wcast-align
-		-Wcast-qual
-		-Wmissing-field-initializers
-		-Wmissing-format-attribute
-		-Wmissing-include-dirs
-		-Wmissing-noreturn
-		-Wnon-virtual-dtor
-		-Woverloaded-virtual
-		-Wswitch
-		-Wunreachable-code
-		-Wunused
-		-Wunused-parameter
-		-Wvariadic-macros
-		-Wwrite-strings
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wextra>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wpedantic>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Werror>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-pedantic-errors>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wold-style-cast>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wcast-align>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wcast-qual>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wmissing-field-initializers>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wmissing-format-attribute>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wmissing-include-dirs>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wmissing-noreturn>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wnon-virtual-dtor>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Woverloaded-virtual>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wswitch>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wunreachable-code>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wunused>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wunused-parameter>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wvariadic-macros>
+		$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wwrite-strings>
 	)
 
 set_target_properties(${PROJECT_NAME}
@@ -190,10 +190,10 @@ if(NOT DISABLE_TESTING)
 
 	target_compile_options(testrunner
 		PRIVATE
-			-Wall
-			-Wextra
-			-Wpedantic
-			-Werror
+			$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wall>
+			$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wextra>
+			$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Wpedantic>
+			$<$<CXX_COMPILER_ID:GNU,Clang,AppleClang>:-Werror>
 		)
 
 	target_include_directories(testrunner

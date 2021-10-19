@@ -1,5 +1,6 @@
 #include <semver/semver.hpp>
 #include "detail/semver_parser.hpp"
+#include <functional>
 #include <limits>
 #include <ostream>
 
