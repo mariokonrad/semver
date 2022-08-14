@@ -1,0 +1,38 @@
+{
+	"version": 3,
+	"cmakeMinimumRequired": {
+		"major": 3,
+		"minor": 21,
+		"patch": 0
+	},
+	"configurePresets": [
+		{
+			"name": "gcc",
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"cacheVariables": {
+				"CMAKE_CXX_COMPILER": "g++",
+				"CMAKE_C_COMPILER": "gcc"
+			}
+		},
+		{
+			"name": "vs2019",
+			"binaryDir": "${sourceDir}/build/${presetName}",
+			"generator": "Visual Studio 16 2019",
+			"architecture": {
+				"value": "x64"
+			},
+			"cacheVariables": {
+				"CMAKE_BUILD_TYPE": "Release",
+				"CMAKE_MODULE_PATH": "${sourceDir}/build/${presetName}"
+			}
+		}
+	],
+	"buildPresets": [
+		{ "name": "gcc",    "configurePreset": "gcc",    "configuration": "Release" },
+		{ "name": "vs2019", "configurePreset": "vs2019", "configuration": "Release" }
+	],
+	"testPresets": [
+		{ "name": "gcc",    "configurePreset": "gcc",    "configuration": "Release" },
+		{ "name": "vs2019", "configurePreset": "vs2019", "configuration": "Release" }
+	]
+}
