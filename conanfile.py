@@ -12,15 +12,46 @@ class Package(ConanFile):
     options = {"shared": [True, False]}
     default_options = {"shared": False}
 
-    exports_sources = 'LICENSE.md', 'CMakeLists.txt', 'include/*', 'src/*'
+    scm = {
+        'type': 'git',
+        'url': 'auto',
+        'revision': 'auto',
+    }
 
     __cmake = None
 
+    def __version_info(self):
+        git = tools.Git(folder=self.recipe_folder)
+        tag_with_dirty = git.run('describe --tags --dirty')
+        last_tag = git.run('describe --tags --abbrev=0')
+        counts_commits = git.run(f'rev-list {last_tag}..HEAD --count')
+        commit_hash = git.run('rev-parse --short HEAD')
+
+        p = re.compile('.*-.*')
+        if p.match(last_tag):
+            info = f'{last_tag}.{counts_commits}.{commit_hash}'
+        else:
+            info = f'{last_tag}-{counts_commits}.{commit_hash}'
+
+        semver_pattern = re.compile("^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-[a-zA-Z0-9.-]+)?(\\+[a-zA-Z0-9.-]+)?$")
+        v = semver_pattern.search(info)
+
+        major = v.group(1)
+        minor = v.group(2)
+        patch = v.group(3)
+        tweak = v.group(4)
+
+        if (int(counts_commits) > 0) or (re.match('.*-dirty.*', tag_with_dirty)):
+            version = f'{major}.{minor}.{patch}{tweak}'
+        else:
+            version = f'{major}.{minor}.{patch}'
+
+        return version
+
     def __cmake_info(self):
         cmakelists = tools.load(os.path.join(self.recipe_folder, 'CMakeLists.txt'))
-        result = re.search(r'project\s*\(\s*([a-zA-Z0-9-_]+)\s+\bVERSION\b\s+(\d+\.\d+\.\d+)(.|\s)*\)',
-                           cmakelists)
-        return result.group(1), result.group(2)
+        result = re.search(r'project\s*\(\s*([a-zA-Z0-9_-]+).*\)', cmakelists, flags=re.DOTALL)
+        return result.group(1)
 
     def __setup_cmake(self):
         if not self.__cmake:
@@ -31,12 +62,10 @@ class Package(ConanFile):
         return self.__cmake
 
     def set_name(self):
-        name, version = self.__cmake_info()
-        self.name = name
+        self.name = self.__cmake_info()
 
     def set_version(self):
-        name, version = self.__cmake_info()
-        self.version = version
+        self.version = self.__version_info()
 
     def build(self):
         cmake = self.__setup_cmake()
@@ -47,5 +76,5 @@ class Package(ConanFile):
         cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = ['semver']
+        self.cpp_info.libs = [self.name]
 
