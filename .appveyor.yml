@@ -1,4 +1,4 @@
-version: '1.1.1+{build}'
+version: '{build}'
 
 image: Visual Studio 2019
 
@@ -7,6 +7,15 @@ configuration: Release
 branches:
   except:
     - gh-pages
+
+install:
+  - ps: $last_tag = git describe --tags --abbrev=0
+  - ps: $count_commits = git rev-list --count "${last_tag}..HEAD"
+  - ps: $commit_hash = git rev-parse --short HEAD
+  - ps: $dirty = if (git describe --tags --dirty | %{$_ -match ".*-dirty$"}) { echo "-dirty" } else { echo "" }
+  - ps: $delm = if ($last_tag -match ".*-.*") { echo "." } else { echo "-" }
+  - ps: $version = "${last_tag}${delm}${count_commits}.${commit_hash}${dirty}"
+  - ps: Update-AppveyorBuild -Version "${version}+$env:APPVEYOR_BUILD_NUMBER"
 
 build_script:
 - cmd: cmake -B build -DCMAKE_BUILD_TYPE=%CONFIGURATION% C:\projects\semver
