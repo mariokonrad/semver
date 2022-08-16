@@ -17,6 +17,8 @@ conan create \
 	${LIBRARY_REPOSITORY} \
 	local/testing
 
+conan search
+
 conan install \
 	--install-folder=${build_dir}/local \
 	-s compiler=gcc \
